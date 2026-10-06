@@ -176,6 +176,14 @@ h1 {
   font-size: 1.05rem;
 }
 
+/* Línea de autoría y fecha (señales E-E-A-T bajo el H1) */
+.hero p.autor-linea {
+  margin: 10px auto 0;
+  color: var(--tinta-suave);
+  font-size: 0.92rem;
+}
+.hero p.autor-linea a { color: var(--verde-osc); }
+
 /* ---------- Generador ---------- */
 .generador {
   margin: 26px 0 10px;
@@ -611,6 +619,36 @@ h3 { font-size: 1.1rem; margin: 18px 0 6px; }
   font-size: 0.92rem;
 }
 .enlaces-relacionados a:hover { background: var(--verde); color: #fff; border-color: var(--verde); }
+
+/* ---------- Barra de chips: enlazado interno bajo el campo de texto ---- */
+.chips-paginas {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 14px 2px 10px;
+  margin: 0 0 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rosa) transparent;
+}
+.chips-paginas::-webkit-scrollbar { height: 6px; }
+.chips-paginas::-webkit-scrollbar-track { background: transparent; }
+.chips-paginas::-webkit-scrollbar-thumb { background: var(--rosa); border-radius: 999px; }
+.chips-paginas a {
+  flex: 0 0 auto;
+  display: inline-block;
+  padding: 10px 18px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(34, 32, 29, 0.06);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--tinta);
+  white-space: nowrap;
+}
+.chips-paginas a:hover { background: var(--rosa); color: #fff; border-color: var(--rosa); }
 
 /* ---------- Pie ---------- */
 .pie {

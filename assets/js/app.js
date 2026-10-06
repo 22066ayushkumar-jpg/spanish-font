@@ -399,6 +399,11 @@
       envoltura.appendChild(campo);
 
       envoltura.appendChild(raiz);
+      /* La barra de chips de enlazado interno (insertada tras el generador
+         en el HTML) viaja dentro de la envoltura para seguir quedando
+         entre el generador y los resultados. */
+      var chipsPaginas = document.querySelector(".chips-paginas");
+      if (chipsPaginas) envoltura.appendChild(chipsPaginas);
       if (barra && barra.parentNode) envoltura.appendChild(barra);
       envoltura.appendChild(salida);
       if (botonMas && botonMas.parentNode) envoltura.appendChild(botonMas.parentNode);
