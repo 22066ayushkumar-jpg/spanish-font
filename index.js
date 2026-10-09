@@ -1,13 +1,18 @@
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
+    try {
+      const url = new URL(request.url);
 
-    // Homepage: serve index.html directly. Address bar STAYS https://letrasbonitas.fun/
-    if (url.pathname === "/") {
-      return env.ASSETS.fetch(new URL("/index.html", request.url));
+      // Homepage: fetch /index.html internally so browser URL stays https://letrasbonitas.fun/
+      if (url.pathname === "/" || url.pathname === "") {
+        const homeUrl = new URL("/index.html", request.url);
+        return await env.ASSETS.fetch(new Request(homeUrl.toString(), request));
+      }
+
+      // All subpages (/juegos.html, CSS, JS, images) served directly with extensions intact
+      return await env.ASSETS.fetch(request);
+    } catch (err) {
+      return new Response("Server Error: " + err.message, { status: 500 });
     }
-
-    // All subpages (/juegos.html, /goticas.html, CSS, JS) stay on their exact URL
-    return env.ASSETS.fetch(request);
   }
 };
