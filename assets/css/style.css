@@ -85,6 +85,8 @@ a:hover { color: var(--rosa); }
      los bordes de la pantalla en móvil. Solo top/bottom: */
   padding-top: 12px;
   padding-bottom: 12px;
+  /* El panel del menú hamburguesa ocupa una fila propia cuando se abre */
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -113,7 +115,7 @@ a:hover { color: var(--rosa); }
 .logo span em { font-style: normal; color: var(--rosa); }
 
 .menu-boton {
-  display: none;
+  display: block;
   border: 1px solid var(--borde);
   background: var(--papel);
   border-radius: 12px;
@@ -123,18 +125,70 @@ a:hover { color: var(--rosa); }
   color: var(--tinta);
 }
 
-.nav-principal ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* Menú hamburguesa: con más de 50 páginas una barra horizontal no cabe,
+   así que en TODAS las pantallas el menú es un panel desplegable que se
+   abre con el botón ☰ (app.js le añade/quita .abierto). Cubre el
+   contenido como capa (position:absolute bajo la cabecera sticky) para
+   que la página no salte al abrirlo. */
+.nav-principal { display: none; }
+
+.nav-principal.abierto {
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--papel);
+  border: 1px solid var(--borde);
+  border-radius: 0 0 var(--radio) var(--radio);
+  box-shadow: var(--sombra);
+  padding: 6px 18px 16px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 50;
+}
+
+.menu-inicio {
+  display: block;
+  max-width: var(--ancho);
+  margin: 0 auto;
+  font-weight: 800;
+  color: var(--verde-osc);
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.menu-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 4px 20px;
+  align-items: start;
+  max-width: var(--ancho);
+  margin: 0 auto;
+}
+
+.menu-grupo h4 {
+  margin: 10px 0 4px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rosa);
+}
+
+.menu-grupo ul {
+  display: grid;
+  gap: 2px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .nav-principal a {
-  display: inline-block;
-  padding: 8px 12px;
+  display: block;
+  padding: 7px 10px;
   border-radius: 10px;
   text-decoration: none;
   color: var(--tinta-suave);
@@ -144,14 +198,6 @@ a:hover { color: var(--rosa); }
 
 .nav-principal a:hover { background: rgba(10, 124, 74, 0.1); color: var(--verde-osc); }
 .nav-principal a[aria-current="page"] { background: var(--verde); color: #fff; }
-
-@media (max-width: 900px) {
-  .menu-boton { display: block; }
-  .nav-principal { display: none; width: 100%; }
-  .nav-principal.abierto { display: block; padding-bottom: 12px; }
-  .cabecera-fila { flex-wrap: wrap; }
-  .nav-principal ul { flex-direction: column; }
-}
 
 /* ---------- Hero ---------- */
 .hero { padding: 34px 0 8px; text-align: center; }
@@ -500,7 +546,9 @@ h1 {
 .generador-pegado > .campo-pegado {
   position: sticky;
   top: 64px;
-  z-index: 60;
+  /* Debajo de la cabecera (z-40) para que el panel del menú hamburguesa
+     la tape al abrirse, y por encima del contenido (z-index auto). */
+  z-index: 30;
   /* Fondo transparente: al flotar solo se ve la caja blanca del campo con
      su sombra, sin bandas de color arriba/abajo. */
   background: transparent;

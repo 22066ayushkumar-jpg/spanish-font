@@ -40,9 +40,37 @@
     var boton = $(".menu-boton");
     var nav = $(".nav-principal");
     if (!boton || !nav) return;
-    boton.addEventListener("click", function () {
-      var abierto = nav.classList.toggle("abierto");
-      boton.setAttribute("aria-expanded", abierto ? "true" : "false");
+    function abrir() {
+      nav.classList.add("abierto");
+      boton.setAttribute("aria-expanded", "true");
+      boton.setAttribute("aria-label", "Cerrar menú");
+    }
+    function cerrar() {
+      nav.classList.remove("abierto");
+      boton.setAttribute("aria-expanded", "false");
+      boton.setAttribute("aria-label", "Abrir menú");
+    }
+    function conmutar() {
+      if (nav.classList.contains("abierto")) cerrar();
+      else abrir();
+    }
+    boton.addEventListener("click", conmutar);
+    // cierra con la tecla Escape
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && nav.classList.contains("abierto")) {
+        cerrar();
+        boton.focus();
+      }
+    });
+    // cierra al hacer clic fuera del menú
+    document.addEventListener("click", function (ev) {
+      if (!nav.classList.contains("abierto")) return;
+      if (nav.contains(ev.target) || boton.contains(ev.target)) return;
+      cerrar();
+    });
+    // cierra al pulsar un enlace del menú
+    nav.addEventListener("click", function (ev) {
+      if (ev.target.closest && ev.target.closest("a")) cerrar();
     });
     // marca el enlace activo
     var ruta = location.pathname.replace(/index\.html$/, "");
@@ -750,7 +778,7 @@
         "Correo: " + (datos.get("correo") || "") + "\n\n" +
         (datos.get("mensaje") || "")
       );
-      window.location.href = "mailto:hola@letrasbonitas.fun?subject=" + asunto + "&body=" + cuerpo;
+      window.location.href = "mailto:letrasbonitas88@gmail.com?subject=" + asunto + "&body=" + cuerpo;
     });
   }
 
