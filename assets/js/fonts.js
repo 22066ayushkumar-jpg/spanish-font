@@ -177,6 +177,23 @@
   M.thai = porCadena(N52, "ค๒ƈɗєԲ૭ɦٱןкʅ๓ก๏ƿqɼรՇપ۷ฬซץչ" + "ค๒ƈɗєԲ૭ɦٱןкʅ๓ก๏ƿqɼรՇપ۷ฬซץչ");
   M.yi = porCadena(N52, "ꍏꌃꉓꀷꍟꎘꁅꃬꀤ꒚ꀘ꒒ꂵꂚꆂꉣꆰꋪꌗ꓄ꀎᐯꅐꇒꌦꏍ" + "ꍏꌃꉓꀷꍟꎘꁅꃬꀤ꒚ꀘ꒒ꂵꂚꆂꉣꆰꋪꌗ꓄ꀎᐯꅐꇒꌦꏍ");
 
+  /* Alfabetos exóticos (etíope, georgiano, bengalí, hindi y Yi 2):
+     los favoritos de los conversores de letras chidas. */
+  M.etiope = porCadena(
+    "abcdefghijklmn\u00f1opqrstuvwxyz\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc",
+    "\u120d\u136a\u122d\u130b\u1279\u127b\u134f\u2db4\u130e\u1353\u12a1\u1228\u132e\u12ad\u12ad\u12d0\u12e8\u12d3\u12ea\u1290\u1355\u1371\u1205\u1220\u1238\u1203\u130a\u120d\u1279\u130e\u12d0\u1371\u134f"
+  );
+
+  M.georgiano = porCadena("abcdefghijklmnopqrstuvwxyz", "\u10d0\u10d1\u10e9\u10d3\u10d4\u10e4\u10d2\u10ee\u10d8\u10df\u10d9\u10da\u10db\u10dc\u10dd\u10de\u10e5\u10e0\u10e1\u10d7\u10e3\u10d5\u10ec\u10ed\u10e7\u10d6");
+
+  M.bengali = porCadena("abcdefghijklmnopqrstuvwxyz", "\u0985\u09ac\u099a\u09a6\u098f\u09ab\u0997\u09b9\u0987\u099c\u0995\u09b2\u09ae\u09a8\u0993\u09aa\u098c\u09b0\u09b8\u09a4\u0989\u09ad\u09ce\u09fd\u09af\u09e1");
+
+  M.hindi = porCadena("abcdefghijklmnopqrstuvwxyz", "\u0905\u092c\u091a\u0926\u090f\u092b\u0917\u0939\u0907\u091c\u0915\u0932\u092e\u0928\u0913\u092a\u0960\u0930\u0938\u0924\u0909\u0935\u0950\u0934\u092f\u0929");
+
+  M.yi2 = porCadena("abcdefghijklmnopqrstuvwxyz", "\ua015\ua0f3\ua262\ua113\ua440\ua2af\ua23c\ua256\ua11b\ua41a\ua017\ua490\ua09a\ua2cd\ua2bf\ua04b\ua4b0\ua305\ua31a\ua4c4\ua48f\ua4a6\ua149\ua264\ua326\ua452");
+  M.runas = porCadena("abcdefghijklmnopqrstuvwxyz", "\u16a8\u16d2\u16b3\u16de\u16d6\u16a0\u16b7\u16ba\u16c1\u16c3\u16b4\u16da\u16d7\u16be\u16df\u16c8\u16e2\u16b1\u16ca\u16cf\u16a2\u16a1\u16b9\u16ea\u16e6\u16c9");
+  M.cingales = porCadena("abcdefghijklmnopqrstuvwxyz", "\u0d85\u0db6\u0da0\u0daf\u0d91\u0dc6\u0d9c\u0dc4\u0d89\u0da2\u0d9a\u0dbd\u0db8\u0db1\u0d94\u0db4\u0d9f\u0dbb\u0dc3\u0dad\u0d8b\u0dc0\u0dc5\u0d9e\u0dba\u0dc2");
+
   /* Tres mapas más del catálogo "clásico": mayúsculas angulares (Λ…),
      neón (ᗩᗷᑕ…) y código de símbolos (zodiaco + ajedrez + estrellas).
      Glifos Unicode estándar, técnica idéntica a los mapas de arriba. */
@@ -292,6 +309,21 @@
     return envolver(par[0] + " ", " " + par[1]);
   }
 
+  /* --- Ayudas para los estilos de carpintero ---
+     letro(): convierte a mayúsculas y aplica un alfabeto (aspecto de
+     rótulo técnico). grabado(): aplica una marca combinante sobre el
+     resultado de otro estilo (efecto de sierra, brocha, taladro…). */
+  function letro(mapa) {
+    return function (texto) {
+      return aplicar(mapa)(String(texto).toUpperCase());
+    };
+  }
+  function grabado(marca, base) {
+    return function (texto) {
+      return marcar(marca)(base(texto));
+    };
+  }
+
   /* ----------------- Catálogo de estilos -----------------
      categorias sirven para filtrar el generador en cada página. */
   var ESTILOS = [
@@ -320,23 +352,23 @@
     { id: "cursiva-negrita", nombre: "Cursiva negrita", cat: ["cursiva", "negrita", "comunes", "instagram", "whatsapp"], fn: aplicar(M.cursivaNegrita) },
     { id: "caligrafica", nombre: "Caligráfica", cat: ["cursiva", "decoradas", "bonitas", "instagram", "facebook"], fn: aplicar(M.caligrafica) },
     { id: "caligrafica-negrita", nombre: "Caligráfica negrita", cat: ["cursiva", "negrita", "decoradas", "bonitas"], fn: aplicar(M.caligraficaNegrita) },
-    { id: "negrita", nombre: "Negrita", cat: ["negrita", "comunes", "instagram", "facebook", "whatsapp", "twitter"], fn: aplicar(M.negritaSerif) },
-    { id: "sans-negrita", nombre: "Negrita sans", cat: ["negrita", "comunes", "twitter", "discord"], fn: aplicar(M.sansNegrita) },
-    { id: "sans", nombre: "Sans", cat: ["comunes", "discord", "twitter"], fn: aplicar(M.sans) },
+    { id: "negrita", nombre: "Negrita", cat: ["negrita", "comunes", "instagram", "facebook", "whatsapp", "twitter", "carpintero"], fn: aplicar(M.negritaSerif) },
+    { id: "sans-negrita", nombre: "Negrita sans", cat: ["negrita", "comunes", "twitter", "discord", "carpintero"], fn: aplicar(M.sansNegrita) },
+    { id: "sans", nombre: "Sans", cat: ["comunes", "discord", "twitter", "carpintero"], fn: aplicar(M.sans) },
     { id: "sans-cursiva", nombre: "Sans cursiva", cat: ["cursiva", "comunes", "discord"], fn: aplicar(M.sansCursiva) },
     { id: "sans-cursiva-negrita", nombre: "Sans cursiva negrita", cat: ["cursiva", "negrita"], fn: aplicar(M.sansCursivaNegrita) },
     { id: "gotica", nombre: "Gótica", cat: ["goticas", "graffiti", "cholas", "juegos", "chidas", "instagram"], fn: aplicar(M.gotica) },
     { id: "gotica-negrita", nombre: "Gótica negrita", cat: ["goticas", "graffiti", "cholas", "juegos"], fn: aplicar(M.goticaNegrita) },
-    { id: "doble-trazo", nombre: "Doble trazo", cat: ["comunes", "raras", "juegos", "discord"], fn: aplicar(M.dobleTrazo) },
+    { id: "doble-trazo", nombre: "Doble trazo", cat: ["comunes", "raras", "juegos", "discord", "carpintero"], fn: aplicar(M.dobleTrazo) },
     { id: "mono", nombre: "Monoespaciada", cat: ["comunes", "carpintero", "discord", "raras"], fn: aplicar(M.mono) },
     { id: "ancho-completo", nombre: "Ancho completo", cat: ["aesthetic", "raras", "juegos", "tiktok"], fn: aplicar(M.anchoCompleto) },
     { id: "circulo", nombre: "Burbuja", cat: ["burbuja", "bonitas", "instagram", "tiktok"], fn: aplicar(M.circulo) },
     { id: "circulo-negro", nombre: "Burbuja negra", cat: ["burbuja", "goticas", "juegos"], fn: aplicar(M.circuloNegro) },
     { id: "cuadro", nombre: "Caja simple", cat: ["caja", "juegos", "raras"], fn: aplicar(M.cuadro) },
     { id: "cuadro-negro", nombre: "Caja negra simple", cat: ["caja", "juegos", "goticas"], fn: aplicar(M.cuadroNegro) },
-    { id: "versalitas", nombre: "Versalitas (pequeñas)", cat: ["pequena", "comunes", "aesthetic", "instagram"], fn: aplicar(M.versalitas) },
-    { id: "superindice", nombre: "Superíndice (mini)", cat: ["pequena", "raras", "aesthetic"], fn: aplicar(M.superindice) },
-    { id: "subindice", nombre: "Subíndice (mini)", cat: ["pequena", "raras"], fn: aplicar(M.subindice) },
+    { id: "versalitas", nombre: "Versalitas (pequeñas)", cat: ["pequena", "comunes", "aesthetic", "instagram", "carpintero"], fn: aplicar(M.versalitas) },
+    { id: "superindice", nombre: "Superíndice (mini)", cat: ["pequena", "raras", "aesthetic", "carpintero"], fn: aplicar(M.superindice) },
+    { id: "subindice", nombre: "Subíndice (mini)", cat: ["pequena", "raras", "carpintero"], fn: aplicar(M.subindice) },
     { id: "squiggle", nombre: "Squiggle", cat: ["squiggle", "raras", "chidas", "juegos"], fn: aplicar(M.squiggle) },
     { id: "squiggle-2", nombre: "Squiggle doble", cat: ["squiggle", "raras", "feas"], fn: aplicar(M.squiggle2) },
     { id: "rusa", nombre: "Estilo ruso", cat: ["raras", "feas", "juegos", "graffiti"], fn: aplicar(M.rusa) },
@@ -425,9 +457,9 @@
     { id: "lagrima", nombre: "Lágrima 💧", cat: ["tristes", "freefire", "juegos", "chidas", "comunes"], fn: bordear(["\ud83d\udca7", "\ud83d\udca7"]) },
 
     /* --- Alfabetos lookalike extra --- */
-    { id: "oriental", nombre: "Estilo oriental", cat: ["raras", "aesthetic", "tiktok", "juegos", "freefire", "chidas", "goticas"], fn: aplicar(M.oriental) },
+    { id: "oriental", nombre: "Estilo oriental", cat: ["raras", "aesthetic", "tiktok", "juegos", "freefire", "chidas", "goticas", "carpintero"], fn: aplicar(M.oriental) },
     { id: "oriental-2", nombre: "Estilo oriental 2", cat: ["raras", "aesthetic", "tiktok", "juegos", "freefire", "chidas", "goticas"], fn: aplicar(M.oriental2) },
-    { id: "moneda", nombre: "Letras de moneda", cat: ["raras", "feas", "juegos", "freefire", "chidas"], fn: aplicar(M.moneda) },
+    { id: "moneda", nombre: "Letras de moneda", cat: ["raras", "feas", "juegos", "freefire", "chidas", "carpintero"], fn: aplicar(M.moneda) },
     { id: "armenio", nombre: "Estilo armenio", cat: ["raras", "squiggle", "feas", "goticas", "chidas", "juegos", "freefire"], fn: aplicar(M.armenio) },
     { id: "rizadas", nombre: "Letras rizadas", cat: ["raras", "feas", "squiggle", "chidas", "juegos", "freefire", "goticas"], fn: aplicar(M.rizada) },
     { id: "onduladas", nombre: "Letras onduladas", cat: ["squiggle", "raras", "feas", "aesthetic", "tiktok", "juegos", "freefire"], fn: aplicar(M.ondulada) },
@@ -442,7 +474,7 @@
     { id: "x-encima", nombre: "Con X encima", cat: ["raras", "feas", "comunes", "juegos", "freefire", "chidas"], fn: marcar("\u033d") },
     { id: "puente", nombre: "Con puente debajo", cat: ["raras", "comunes", "juegos", "chidas"], fn: marcar("\u032a") },
     { id: "teclas", nombre: "Estilo teclado (keycap)", cat: ["juegos", "freefire", "chidas", "raras", "comunes", "discord"], fn: function (t) { var s = "", cs = Array.from(t); for (var i = 0; i < cs.length; i++) { var c = cs[i]; s += /\s/.test(c) ? c : c + "\u20e3"; } return s; } },
-    { id: "caja-por-letra", nombre: "Caja por letra", cat: ["juegos", "freefire", "chidas", "caja", "raras", "comunes"], fn: function (t) { var s = "", cs = Array.from(t); for (var i = 0; i < cs.length; i++) { var c = cs[i]; s += /\s/.test(c) ? c : c + "\u20de"; } return s; } },
+    { id: "caja-por-letra", nombre: "Caja por letra", cat: ["juegos", "freefire", "chidas", "caja", "raras", "comunes", "carpintero"], fn: function (t) { var s = "", cs = Array.from(t); for (var i = 0; i < cs.length; i++) { var c = cs[i]; s += /\s/.test(c) ? c : c + "\u20de"; } return s; } },
 
     /* --- Envoltorios tipo "premium" --- */
     { id: "estrellas-dobles", nombre: "Estrellas dobles ミ★", cat: ["decoradas", "bonitas", "instagram", "tiktok", "aesthetic", "comunes"], fn: bordear(["ミ★", "★彡"]) },
@@ -455,7 +487,7 @@
     { id: "mezcla-3", nombre: "Mezcla gamer", cat: ["comunes", "juegos", "freefire", "chidas", "goticas", "discord"], fn: function (t) { return mezclarTexto(t, ["sansNegrita", "anchoCompleto", "mono", "negritaSerif"]); } },
 
     /* --- Alfabetos clásicos añadidos (angulares, neón, código) --- */
-    { id: "angulares", nombre: "Mayúsculas angulares", cat: ["raras", "chidas", "juegos", "freefire", "goticas", "graffiti"], fn: aplicar(M.angulares) },
+    { id: "angulares", nombre: "Mayúsculas angulares", cat: ["raras", "chidas", "juegos", "freefire", "goticas", "graffiti", "carpintero"], fn: aplicar(M.angulares) },
     { id: "neon", nombre: "Estilo neón", cat: ["raras", "aesthetic", "tiktok", "juegos", "freefire", "chidas", "goticas"], fn: aplicar(M.neon) },
     { id: "codigo-simbolos", nombre: "Código de símbolos", cat: ["raras", "feas", "chidas", "juegos", "freefire", "goticas", "glitch"], fn: aplicar(M.codigo) },
 
@@ -468,6 +500,137 @@
     { id: "marca-cruz-doble", nombre: "Con cruz arriba y abajo", cat: ["raras", "feas", "goticas", "glitch", "juegos", "freefire", "chidas"], fn: marcar("\u033d\u0353") },
     { id: "marca-chispas", nombre: "Con chispas encima", cat: ["raras", "feas", "glitch", "goticas", "juegos", "freefire", "chidas"], fn: marcar("\u0489") },
     { id: "marca-flechas-debajo", nombre: "Con doble flecha debajo", cat: ["raras", "feas", "glitch", "juegos", "freefire", "chidas", "comunes"], fn: marcar("\u0362") },
+
+    /* --- ESTILOS DE CARPINTERO ---------------------------------------
+       Trazo recto, mayúsculas de taller, marcos de plano y efectos de
+       obra. Todos llevan la categoría "carpintero" y solo se muestran
+       en la página de letras de carpintero. */
+    { id: "esquinas-tecnicas", nombre: "Esquinas técnicas", cat: ["carpintero"], fn: function (t) { return bordear(["\u2308", "\u2309"])(letro(M.mono)(t)); } },
+    { id: "base-tecnica", nombre: "Cota inferior", cat: ["carpintero"], fn: function (t) { return bordear(["\u230a", "\u230b"])(letro(M.mono)(t)); } },
+    { id: "moldura-alta", nombre: "Moldura superior", cat: ["carpintero"], fn: function (t) { return bordear(["\u23a1", "\u23a4"])(letro(M.mono)(t)); } },
+    { id: "moldura-baja", nombre: "Moldura inferior", cat: ["carpintero"], fn: function (t) { return bordear(["\u23a3", "\u23a6"])(letro(M.mono)(t)); } },
+    { id: "esquinas-finas", nombre: "Esquinas finas", cat: ["carpintero"], fn: function (t) { return bordear(["\u231c", "\u231d"])(letro(M.mono)(t)); } },
+    { id: "arranque-fino", nombre: "Apoyo fino", cat: ["carpintero"], fn: function (t) { return bordear(["\u231e", "\u231f"])(letro(M.mono)(t)); } },
+    { id: "corchetes-obreros", nombre: "Corchetes obreros", cat: ["carpintero"], fn: function (t) { return bordear(["\u27e6", "\u27e7"])(letro(M.mono)(t)); } },
+    { id: "corchetes-huecos", nombre: "Corchetes calados", cat: ["carpintero"], fn: function (t) { return bordear(["\u301a", "\u301b"])(letro(M.mono)(t)); } },
+    { id: "comillas-taller", nombre: "Comillas de taller", cat: ["carpintero"], fn: function (t) { return bordear(["\u300e", "\u300f"])(letro(M.mono)(t)); } },
+    { id: "entre-corchetes", nombre: "Entre corchetes", cat: ["carpintero"], fn: function (t) { return bordear(["[", "]"])(letro(M.mono)(t)); } },
+    { id: "faja-gruesa", nombre: "Faja gruesa", cat: ["carpintero"], fn: function (t) { return bordear(["\u3010", "\u3011"])(letro(M.sansNegrita)(t)); } },
+    { id: "entre-angulos", nombre: "Entre ángulos", cat: ["carpintero"], fn: function (t) { return bordear(["\u27e8", "\u27e9"])(letro(M.mono)(t)); } },
+    { id: "bloques-laterales", nombre: "Bloques laterales", cat: ["carpintero"], fn: function (t) { return bordear(["\u2590", "\u258c"])(letro(M.sansNegrita)(t)); } },
+    { id: "esquinas-macizas", nombre: "Esquinas macizas", cat: ["carpintero"], fn: function (t) { return bordear(["\u2599", "\u259f"])(letro(M.sansNegrita)(t)); } },
+    { id: "cornisas", nombre: "Cornisas", cat: ["carpintero"], fn: function (t) { return bordear(["\u259b", "\u259c"])(letro(M.sansNegrita)(t)); } },
+    { id: "doble-canto", nombre: "Marco de doble canto", cat: ["carpintero"], fn: function (t) { return bordear(["\u2554", "\u2557"])(letro(M.sansNegrita)(t)); } },
+    { id: "bancada-doble", nombre: "Bancada doble", cat: ["carpintero"], fn: function (t) { return bordear(["\u255a", "\u255d"])(letro(M.sansNegrita)(t)); } },
+    { id: "punta-superior", nombre: "Punta superior", cat: ["carpintero"], fn: function (t) { return bordear(["\u25e4", "\u25e5"])(letro(M.sansNegrita)(t)); } },
+    { id: "punta-inferior", nombre: "Punta inferior", cat: ["carpintero"], fn: function (t) { return bordear(["\u25e3", "\u25e2"])(letro(M.sansNegrita)(t)); } },
+    { id: "trama-diagonal", nombre: "Trama diagonal", cat: ["carpintero"], fn: function (t) { return bordear(["\u259a", "\u259e"])(letro(M.mono)(t)); } },
+    { id: "montantes", nombre: "Con montantes", cat: ["carpintero"], fn: function (t) { return bordear(["\u2524", "\u251c"])(letro(M.mono)(t)); } },
+    { id: "travesanos", nombre: "Con travesaños", cat: ["carpintero"], fn: function (t) { return bordear(["\u25ac", "\u25ac"])(letro(M.mono)(t)); } },
+    { id: "vigas-base", nombre: "Vigas de base", cat: ["carpintero"], fn: function (t) { return bordear(["\u2584", "\u2584"])(letro(M.sansNegrita)(t)); } },
+    { id: "friso-clasico", nombre: "Friso clásico", cat: ["carpintero"], fn: function (t) { return bordear(["\u2308", "\u2309"])(letro(M.negritaSerif)(t)); } },
+    { id: "taladrado", nombre: "Perforado por letra", cat: ["carpintero"], fn: grabado("\u0323", letro(M.mono)) },
+    { id: "rotulo-plano", nombre: "Rótulo de plano", cat: ["carpintero"], fn: letro(M.sansNegrita) },
+    { id: "mayus-obra", nombre: "Mayúsculas de obra", cat: ["carpintero"], fn: letro(M.sans) },
+    { id: "doble-trazo-plano", nombre: "Doble trazo de plano", cat: ["carpintero"], fn: letro(M.dobleTrazo) },
+    { id: "talla-serif", nombre: "Talla derecha", cat: ["carpintero"], fn: letro(M.negritaSerif) },
+    { id: "linea-fondo", nombre: "Con línea de fondo", cat: ["carpintero"], fn: grabado("\u0332", letro(M.mono)) },
+    { id: "brocha-gruesa", nombre: "Brocha gruesa", cat: ["carpintero"], fn: grabado("\u0332", letro(M.sansNegrita)) },
+    { id: "huella-brocha", nombre: "Huella de brocha", cat: ["carpintero"], fn: grabado("\u0332", letro(M.sans)) },
+    { id: "doble-huella", nombre: "Doble huella", cat: ["carpintero"], fn: grabado("\u0333", letro(M.sansNegrita)) },
+    { id: "nivel-superior", nombre: "Nivel superior", cat: ["carpintero"], fn: grabado("\u0305", letro(M.mono)) },
+    { id: "gabinete-nivel", nombre: "Gabinete con nivel", cat: ["carpintero"], fn: grabado("\u0305", letro(M.negritaSerif)) },
+    { id: "marco-total", nombre: "Con marco y fondo", cat: ["carpintero"], fn: grabado("\u0305\u0332", letro(M.mono)) },
+    { id: "corte-diagonal", nombre: "Con corte diagonal", cat: ["carpintero"], fn: grabado("\u0338", letro(M.mono)) },
+    { id: "marcas-montaje", nombre: "Marcas de montaje", cat: ["carpintero"], fn: grabado("\u033d", letro(M.sans)) },
+    { id: "doble-raya-base", nombre: "Raya gruesa al pie", cat: ["carpintero"], fn: grabado("\u0332\u0332", letro(M.sansNegrita)) },
+    { id: "puntos-mira", nombre: "Puntos de mira", cat: ["carpintero"], fn: grabado("\u0307", letro(M.sans)) },
+    { id: "rasante", nombre: "Con rasante", cat: ["carpintero"], fn: grabado("\u0331", letro(M.sans)) },
+    { id: "pedestal", nombre: "Con pedestal", cat: ["carpintero"], fn: grabado("\u032a", letro(M.sans)) },
+    { id: "remaches-base", nombre: "Con remaches de base", cat: ["carpintero"], fn: grabado("\u0325", letro(M.mono)) },
+    { id: "remaches-top", nombre: "Con remaches", cat: ["carpintero"], fn: grabado("\u030a", letro(M.negritaSerif)) },
+    { id: "cortes-hilo", nombre: "Con cortes al hilo", cat: ["carpintero"], fn: grabado("\u0335", letro(M.mono)) },
+    { id: "punteado-tecnico", nombre: "Punteado técnico", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u00b7")(letro(M.mono)(t)); } },
+    { id: "puntos-gordos", nombre: "Con puntos gordos", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2022")(letro(M.mono)(t)); } },
+    { id: "barrotes", nombre: "Con barrotes", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2503")(letro(M.mono)(t)); } },
+    { id: "tabiques", nombre: "Con tabiques", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2502")(letro(M.mono)(t)); } },
+    { id: "clavado", nombre: "Clavado por letra", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u30fb")(letro(M.mono)(t)); } },
+    { id: "guias-sueltas", nombre: "Con líneas guía", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2500")(letro(M.mono)(t)); } },
+    { id: "nivel-doble", nombre: "Con nivel doble", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2550")(letro(M.mono)(t)); } },
+    { id: "cruces-obreras", nombre: "Con cruces de obra", cat: ["carpintero"], fn: function (t) { return entreSimbolos("+")(letro(M.sansNegrita)(t)); } },
+    { id: "escuadras", nombre: "Con escuadras", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u25aa")(letro(M.sansNegrita)(t)); } },
+    { id: "remates-calados", nombre: "Con diamantes calados", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u25c8")(letro(M.mono)(t)); } },
+    { id: "cortes-sierra", nombre: "Con cortes de sierra", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\uff0f")(letro(M.mono)(t)); } },
+    { id: "zanjas", nombre: "Con zanjas", cat: ["carpintero"], fn: function (t) { return entreSimbolos("_")(letro(M.mono)(t)); } },
+    { id: "guiones-medida", nombre: "Con guiones de medida", cat: ["carpintero"], fn: function (t) { return entreSimbolos("-")(letro(M.mono)(t)); } },
+    { id: "remates-estelares", nombre: "Con remates estelares", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2726")(letro(M.sansNegrita)(t)); } },
+    { id: "picos", nombre: "Con picos", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u25b2")(letro(M.mono)(t)); } },
+    { id: "interlineado-abierto", nombre: "Letra espaciada", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u3000")(letro(M.mono)(t)); } },
+    { id: "letra-elevada", nombre: "Letra de nota", cat: ["carpintero"], fn: function (t) { return letro(M.superindice)(t); } },
+    { id: "cartelon", nombre: "Cartelón", cat: ["carpintero"], fn: letro(M.circuloNegro) },
+    { id: "talla-grabada", nombre: "Talla con surco", cat: ["carpintero"], fn: grabado("\u0332", letro(M.negritaSerif)) },
+    { id: "casco-obra", nombre: "Casco de obra", cat: ["carpintero"], fn: function (t) { return bordear(["\ud83d\udee0\ufe0f", "\ud83d\udee0\ufe0f"])(letro(M.sansNegrita)(t)); } },
+    { id: "tuerca-giratoria", nombre: "Con tuerca", cat: ["carpintero"], fn: function (t) { return bordear(["\u2699", "\u2699"])(letro(M.mono)(t)); } },
+    { id: "escuadra-digital", nombre: "Con escuadra digital", cat: ["carpintero"], fn: function (t) { return bordear(["\ud83d\udcd0", "\ud83d\udcd0"])(letro(M.mono)(t)); } },
+    { id: "entre-tablas", nombre: "Entre tablas", cat: ["carpintero"], fn: function (t) { return bordear(["\ud83e\udeb5", "\ud83e\udeb5"])(letro(M.sansNegrita)(t)); } },
+    { id: "grafito-tecnico", nombre: "Con grafito técnico", cat: ["carpintero"], fn: function (t) { return bordear(["\u270f", "\u270f"])(letro(M.mono)(t)); } },
+    { id: "teclas-obra", nombre: "Teclas de obra", cat: ["carpintero"], fn: function (t) { var s = "", cs = Array.from(letro(M.sans)(t)); for (var i = 0; i < cs.length; i++) { var c = cs[i]; s += /\s/.test(c) ? c : c + "\u20e3"; } return s; } },
+    { id: "rotulado-punteado", nombre: "Rótulo punteado", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u00b7")(letro(M.sansNegrita)(t)); } },
+    { id: "guiones-obrero", nombre: "Guiones de obra", cat: ["carpintero"], fn: function (t) { return entreSimbolos("-")(letro(M.sansNegrita)(t)); } },
+    { id: "doble-punteado", nombre: "Doble trazo punteado", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u00b7")(letro(M.dobleTrazo)(t)); } },
+    { id: "barrotes-serif", nombre: "Serif con barrotes", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2503")(letro(M.negritaSerif)(t)); } },
+    { id: "dientes-sierra", nombre: "Dientes de sierra", cat: ["carpintero"], fn: grabado("\u032d", letro(M.mono)) },
+    { id: "faros", nombre: "Con faros", cat: ["carpintero"], fn: function (t) { return bordear(["\u25d8", "\u25d8"])(letro(M.mono)(t)); } },
+    { id: "viejo-cartel", nombre: "Letra antigua de taller", cat: ["carpintero"], fn: letro(M.goticaNegrita) },
+    { id: "caja-barrote", nombre: "Caja en barrote", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2503")(aplicar(M.cajaNegraMayus)(t.toUpperCase())); } },
+    { id: "caja-escuadras", nombre: "Caja con escuadras", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u25aa")(aplicar(M.cajaMayus)(t.toUpperCase())); } },
+    { id: "casillas-punteadas", nombre: "Casillas punteadas", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u00b7")(aplicar(M.cuadroNegro)(t.toUpperCase())); } },
+    { id: "pilotes", nombre: "Con pilotes", cat: ["carpintero"], fn: grabado("\u033b", letro(M.mono)) },
+    { id: "capitel", nombre: "Con capitel", cat: ["carpintero"], fn: grabado("\u033a", letro(M.sans)) },
+    { id: "chispas-pie", nombre: "Con chispas al pie", cat: ["carpintero"], fn: grabado("\u0359", letro(M.sans)) },
+    { id: "cortes-opuestos", nombre: "Cortes enfrentados", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\uff3c")(letro(M.mono)(t)); } },
+    { id: "rieles", nombre: "Con rieles", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2594")(letro(M.mono)(t)); } },
+    { id: "serif-punteada", nombre: "Serif punteada", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u00b7")(letro(M.negritaSerif)(t)); } },
+    { id: "cortes-a-filo", nombre: "Cortes al filo", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\uff0f")(letro(M.sansNegrita)(t)); } },
+    { id: "listones-anchos", nombre: "Con listones anchos", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2630")(letro(M.mono)(t)); } },
+    { id: "cruces-anchas", nombre: "Cruces de grandor", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\uff0b")(letro(M.mono)(t)); } },
+    { id: "estrellas-linieras", nombre: "Con estrellas al hilo", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2729")(letro(M.mono)(t)); } },
+    { id: "tornillos-vivos", nombre: "Con tornillos", cat: ["carpintero"], fn: function (t) { return bordear(["\u2692", "\u2692"])(letro(M.mono)(t)); } },
+    { id: "montaje-doble", nombre: "Con montaje doble", cat: ["carpintero"], fn: function (t) { return entreSimbolos("\u2016")(letro(M.mono)(t)); } },
+    { id: "doble-surco", nombre: "Con doble surco", cat: ["carpintero"], fn: grabado("\u0333", letro(M.negritaSerif)) },
+    { id: "guia-doblada", nombre: "Con guía doblada", cat: ["carpintero"], fn: grabado("\u0333", letro(M.mono)) },
+    { id: "cotas-amplias", nombre: "Con cotas amplias", cat: ["carpintero"], fn: function (t) { return bordear(["\uff1c", "\uff1e"])(letro(M.mono)(t)); } },
+
+    /* --- Estilos chidos nuevos (inspirados en los conversores de moda) ---
+       Alfabetos exóticos, mezclas editoriales letra a letra y envoltorios
+       aesthetic. Todos entran en la categoría "chidas". */
+    { id: "etiope", nombre: "Estilo etíope", cat: ["chidas", "raras", "instagram", "tiktok", "comunes"], fn: aplicar(M.etiope) },
+    { id: "georgiano", nombre: "Estilo georgiano", cat: ["chidas", "raras", "instagram", "comunes"], fn: aplicar(M.georgiano) },
+    { id: "bengali", nombre: "Estilo bengalí", cat: ["chidas", "raras", "aesthetic", "tiktok"], fn: aplicar(M.bengali) },
+    { id: "hindi", nombre: "Estilo hindi", cat: ["chidas", "raras", "aesthetic"], fn: aplicar(M.hindi) },
+    { id: "yi-2", nombre: "Estilo Yi 2", cat: ["chidas", "raras", "juegos", "freefire"], fn: aplicar(M.yi2) },
+    { id: "flecha-punteada", nombre: "Flecha punteada", cat: ["chidas", "aesthetic", "instagram", "tiktok"], fn: function (t) { return "\u02da\u208a\u00b7\u27b5 " + entreSimbolos("\u00b7")(aplicar(M.cursiva)(t)) + " \u27b4\u00b7\u208a\u02da"; } },
+    { id: "mezcla-editorial", nombre: "Mezcla editorial", cat: ["chidas", "comunes", "instagram", "tiktok", "bonitas"], fn: function (t) { return mezclarTexto(t, ["sansNegrita", "sansCursivaNegrita", "cursivaNegrita", "sansCursiva"]); } },
+    { id: "mezcla-astro", nombre: "Mezcla astro", cat: ["chidas", "juegos", "freefire", "raras"], fn: function (t) { return mezclarTexto(t, ["neon", "mono", "sansNegrita"]); } },
+    { id: "humo-aesthetic", nombre: "Humo aesthetic", cat: ["chidas", "aesthetic", "tiktok", "instagram", "bonitas"], fn: function (t) { return "\u2230\u2727 " + mezclarTexto(t, ["anchoCompleto", "sansCursiva", "sans"]) + " \u2727\u2230"; } },
+    { id: "pegatina-mixta", nombre: "Pegatina mixta", cat: ["chidas", "juegos", "discord", "freefire"], fn: function (t) { var palabras = String(t).trim().split(/\s+/), salida = []; for (var i = 0; i < palabras.length; i++) { var cs = Array.from(palabras[i]), linea = ""; for (var j = 0; j < cs.length; j++) { var c = cs[j]; if (j === 0) { var up = c.toUpperCase(); linea += M.cajaNegraMayus[up] ? M.cajaNegraMayus[up] : c; } else { linea += M.sansCursivaNegrita[c] ? M.sansCursivaNegrita[c] : c; } } salida.push(linea); } return salida.join(" "); } },
+    { id: "mezcla-caja-burbuja", nombre: "Caja y burbuja", cat: ["chidas", "juegos", "comunes", "burbuja"], fn: function (t) { return mezclarTexto(t, ["cajaMayus", "circulo"]); } },
+    { id: "triple-trazo", nombre: "Trazos cruzados", cat: ["chidas", "graffiti", "raras"], fn: marcar("\u0336\u0333") },
+
+    /* --- Segunda hornada de estilos chidos: runas vikingas, cingalés,
+       mezclas caóticas (babel, matrix) y efectos de teclado. --- */
+    { id: "runas", nombre: "Runas vikingas", cat: ["chidas", "juegos", "freefire", "raras"], fn: aplicar(M.runas) },
+    { id: "cingales", nombre: "Estilo cingalés", cat: ["chidas", "raras", "aesthetic"], fn: aplicar(M.cingales) },
+    { id: "babel", nombre: "Torre de Babel", cat: ["chidas", "raras", "instagram", "tiktok"], fn: function (t) { return mezclarTexto(t, ["etiope", "georgiano", "yi", "rusa", "griega"]); } },
+    { id: "matrix", nombre: "Lluvia matrix", cat: ["chidas", "juegos", "freefire", "glitch"], fn: function (t) { return mezclarTexto(t, ["mono", "oriental"]); } },
+    { id: "pixelado", nombre: "Pixelado retro", cat: ["chidas", "juegos", "discord"], fn: function (t) { return "\u2593\u2592\u2591 " + aplicar(M.mono)(t) + " \u2591\u2592\u2593"; } },
+    { id: "terminal", nombre: "Modo terminal", cat: ["chidas", "discord", "juegos"], fn: function (t) { return ">_ " + aplicar(M.mono)(t) + " \u258c"; } },
+    { id: "eco-griego", nombre: "Eco griego", cat: ["chidas", "raras", "instagram"], fn: function (t) { return mezclarTexto(t, ["griega", "sansNegrita"]); } },
+    { id: "mezcla-mayhem", nombre: "Mezcla mayhem", cat: ["chidas", "juegos", "freefire"], fn: function (t) { return mezclarTexto(t, ["goticaNegrita", "neon", "mono", "cajaMayus"]); } },
+    { id: "mezcla-vibrato", nombre: "Mezcla vibrato", cat: ["chidas", "aesthetic", "tiktok"], fn: function (t) { return mezclarTexto(t, ["sans", "subindice"]); } },
+    { id: "flecha-arriba", nombre: "Flechas al aire", cat: ["chidas", "raras", "graffiti"], fn: marcar("\u20d7") },
+    { id: "doble-subrayado", nombre: "Doble subrayado", cat: ["chidas", "comunes", "instagram"], fn: marcar("\u0333") },
+    { id: "tachado-punteado", nombre: "Tachado punteado", cat: ["chidas", "raras", "discord"], fn: marcar("\u0335") },
 
     /* --- Diseños clásicos (van al principio de la lista) --- */
     { id: "barra-poder", nombre: "Barra de poder ▁▂▃", cat: ["freefire", "juegos", "goticas", "chidas", "graffiti", "cholas"], fn: bordear(["▁▂▄▅▆▇█", "█▇▆▅▄▂▁"]) },
@@ -511,6 +674,13 @@
      paginación siguen funcionando igual (solo cambia el orden).
      ===================================================================== */
   var DISENOS = [
+    /* Los marcos de carpintero abren la página de letras de carpintero:
+       son el look más llamativo de ese generador. En el resto de las
+       páginas no aparecen, así que la lista global no cambia. */
+    "esquinas-tecnicas", "esquinas-macizas", "bloques-laterales",
+    "doble-canto", "cornisas", "travesanos", "faja-gruesa", "bancada-doble",
+    "corchetes-obreros", "vigas-base", "base-tecnica", "entre-tablas",
+    "moldura-alta", "moldura-baja", "punta-superior", "punta-inferior",
     "espadas-gamer", "rayo-gamer", "sello-gamer", "francotirador-gamer",
     "corchetes-japoneses", "corchetes-dobles", "parentesis-dobles",
     "comillas-japonesas", "comillas-japonesas-simples", "parentesis-gruesos",
@@ -554,6 +724,14 @@
      es la curaduría; en cada página solo destacan los que existen en esa
      categoría. Añadir/quitar ids aquí es la única edición necesaria. */
   var DESTACADOS = [
+    /* Estrellas de la página de carpintero (🔥). Como estos estilos solo
+       existen en la categoría "carpintero", colocarlos al principio aquí
+       solo reordena esa página: el resto del sitio queda igual. */
+    "rotulo-plano", "brocha-gruesa", "esquinas-tecnicas", "esquinas-macizas",
+    "taladrado", "barrotes", "nivel-superior", "cartelon",
+    "mayus-obra", "doble-trazo-plano", "clavado", "entre-tablas",
+    /* Estrella de las letras chidas: el etíope que va de moda */
+    "etiope", "runas", "babel", "matrix", "flecha-punteada", "mezcla-editorial", "georgiano",
     // Marcos y diseños estrella
     "sello-gamer", "francotirador-gamer", "barra-poder", "espadas-gamer",
     "sello-divino", "marco-musical", "reina-corona", "cinta-floral",

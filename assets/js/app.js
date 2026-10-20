@@ -268,9 +268,11 @@
 
     function pintar() {
       var texto = textoActual();
-      var filtro = buscador ? buscador.value.trim().toLowerCase() : "";
+      /* La búsqueda ignora tildes: «etiope» encuentra «Estilo etíope» */
+      var sinAcentos = function (s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
+      var filtro = buscador ? sinAcentos(buscador.value.trim().toLowerCase()) : "";
       var lista = listaTodos().filter(function (e) {
-        var coincideFiltro = !filtro || e.nombre.toLowerCase().indexOf(filtro) !== -1;
+        var coincideFiltro = !filtro || sinAcentos(e.nombre.toLowerCase()).indexOf(filtro) !== -1;
         if (modo === "favoritas") return coincideFiltro && esFavorito(e.id);
         return coincideFiltro;
       });
