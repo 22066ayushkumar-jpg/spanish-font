@@ -42,7 +42,7 @@ PAGINAS = [
     ("/nombres-veteranos-free-fire.html", "Nombres de veteranos para Free Fire"),
     ("/cursiva.html", "Letras cursivas"),
     ("/goticas.html", "Letras góticas"),
-    ("/burbuja.html", "Letras burbuja"),
+    ("/letras-burbuja.html", "Letras burbuja"),
     ("/decoradas.html", "Letras decoradas"),
     ("/negrita.html", "Letras en negrita"),
     ("/pequena.html", "Letras pequeñas"),

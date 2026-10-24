@@ -1,26 +1,10 @@
 /* =============================================================================
-   navigation.js — MENÚ + PIE + AVISO DE COOKIES (ARCHIVO GENERADO)
-   =============================================================================
-   GENERADO AUTOMÁTICAMENTE por scripts/generar-estaticos.mjs en cada build.
-   NO lo edites a mano: se regenera desde src/lib/estado.js (días publicados)
-   y src/lib/navegacion.js (qué páginas van en el menú y en cada columna).
-
-   Estado actual: 1 de 52 días publicados.
-   Para publicar el día N:  npm run publicar -- N  (o edita DIAS_PUBLICADOS
-   en src/lib/estado.js y ejecuta npm run build).
-
-   Este archivo inyecta en TODAS las páginas:
-     1. El menú principal  -> dentro de <nav class="nav-principal" data-nav-principal>
-     2. Las columnas del pie -> dentro de <div class="pie-rejilla" data-nav-pie>
-     3. El aviso de cookies -> dentro de <div class="banner-cookies" data-banner-cookies>
-   Solo aparecen páginas ya publicadas: imposible enlazar a un 404.
+   navigation.js — cabecera, menú, descubrimiento, pie y aviso de cookies
+   Renderiza los bloques compartidos de todas las páginas. JavaScript puro.
    ============================================================================= */
 (function () {
   "use strict";
 
-  /* ============================= 1. MENÚ ================================== */
-  /* Menú hamburguesa: se abre con el botón ☰ y muestra TODAS las páginas
-     agrupadas por tema. El enlace a la portada se añade aparte (menuHTML). */
   var MENU = [
     {
       titulo: "Redes sociales",
@@ -38,7 +22,7 @@
       paginas: [
         { ruta: "/cursiva.html", etiqueta: "Letras cursivas" },
         { ruta: "/goticas.html", etiqueta: "Letras góticas" },
-        { ruta: "/burbuja.html", etiqueta: "Letras burbuja" },
+        { ruta: "/letras-burbuja.html", etiqueta: "Letras burbuja" },
         { ruta: "/decoradas.html", etiqueta: "Letras decoradas" },
         { ruta: "/negrita.html", etiqueta: "Letras en negrita" },
         { ruta: "/pequena.html", etiqueta: "Letras pequeñas" },
@@ -99,96 +83,339 @@
     }
   ];
 
-  /* ============================= 2. PIE =================================== */
-  /* Columna 1 — Redes sociales */
+  var RAPIDA = [
+    { ruta: "/cursiva.html", etiqueta: "Cursiva" },
+    { ruta: "/goticas.html", etiqueta: "Góticas" },
+    { ruta: "/instagram.html", etiqueta: "Instagram" },
+    { ruta: "/nombres-para-free-fire.html", etiqueta: "Free Fire" },
+    { ruta: "/simbolos-aesthetic.html", etiqueta: "Símbolos" }
+  ];
+
   var REDES = [
-    { ruta: "https://x.com/Letrasbonitas14", etiqueta: "X (Twitter)", externa: true },
-    { ruta: "https://www.pinterest.com/letrasbonitas88/_profile/_created/", etiqueta: "Pinterest", externa: true },
-    { ruta: "https://www.quora.com/profile/Letras-Bonitas-12", etiqueta: "Quora", externa: true }
-  ];
-
-  /* Columna 2 — Estilos */
-  var ESTILOS = [
-  ];
-
-  /* Columna 3 — Juegos y nombres */
-  var JUEGOS = [
-  ];
-
-  /* Columna 4 — Información */
-  var INFO = [
-  ];
-
-  /* ====================== 3. AVISO DE COOKIES ============================= */
-    /* La política de cookies (/cookies.html) está publicada: el aviso
-       enlaza a ella. */
-    var COOKIES_POLITICA = "/cookies.html";
-
-  /* ============================ Motor de render =========================== */
-
-  function lista(items) {
-    if (!items || !items.length) return "";
-    var lis = "";
-    for (var i = 0; i < items.length; i++) {
-      var extra = items[i].externa
-        ? ' target="_blank" rel="noopener"'
-        : "";
-      lis += '<li><a href="' + items[i].ruta + '"' + extra + ">" + items[i].etiqueta + "</a></li>";
+    {
+      ruta: "https://x.com/Letrasbonitas14",
+      etiqueta: "X / Twitter",
+      externa: true
+    },
+    {
+      ruta: "https://www.pinterest.com/letrasbonitas88/_profile/_created/",
+      etiqueta: "Pinterest",
+      externa: true
+    },
+    {
+      ruta: "https://www.quora.com/profile/Letras-Bonitas-12",
+      etiqueta: "Quora",
+      externa: true
     }
-    return "<ul>" + lis + "</ul>";
+  ];
+
+  var PIE_COLUMNAS = [
+    {
+      titulo: "Estilos populares",
+      enlaces: [
+        { ruta: "/cursiva.html", etiqueta: "Letras cursivas" },
+        { ruta: "/goticas.html", etiqueta: "Letras góticas" },
+        { ruta: "/letras-burbuja.html", etiqueta: "Letras burbuja" },
+        { ruta: "/decoradas.html", etiqueta: "Letras decoradas" },
+        { ruta: "/chidas.html", etiqueta: "Letras chidas" },
+        { ruta: "/pequena.html", etiqueta: "Letras pequeñas" }
+      ]
+    },
+    {
+      titulo: "Juegos y nombres",
+      enlaces: [
+        { ruta: "/nombres-para-free-fire.html", etiqueta: "Nombres para Free Fire" },
+        { ruta: "/nombres-chidos-free-fire.html", etiqueta: "Nombres chidos" },
+        { ruta: "/nombres-clanes-free-fire.html", etiqueta: "Nombres de clanes" },
+        { ruta: "/nombres-verificado-free-fire.html", etiqueta: "Nombres verificados" },
+        { ruta: "/juegos.html", etiqueta: "Letras para juegos" },
+        { ruta: "/nombres-free-fire-miedo.html", etiqueta: "Nombres de miedo" }
+      ]
+    },
+    {
+      titulo: "Herramientas",
+      enlaces: [
+        { ruta: "/simbolos-aesthetic.html", etiqueta: "Símbolos aesthetic" },
+        { ruta: "/kaomoji.html", etiqueta: "Kaomoji" },
+        { ruta: "/hiragana.html", etiqueta: "Hiragana" },
+        { ruta: "/katakana.html", etiqueta: "Katakana" },
+        { ruta: "/numeros-en-letras.html", etiqueta: "Números en letras" },
+        { ruta: "/mayusculas-a-minusculas.html", etiqueta: "Mayúsculas a minúsculas" }
+      ]
+    },
+    {
+      titulo: "Letras Bonitas",
+      enlaces: [
+        { ruta: "/acerca-de-nosotros.html", etiqueta: "Acerca de nosotros" },
+        { ruta: "/contacto.html", etiqueta: "Contacto" },
+        { ruta: "/cookies.html", etiqueta: "Política de cookies" },
+        { ruta: "/aviso-legal.html", etiqueta: "Aviso legal" },
+        { ruta: "/privacy-policy.html", etiqueta: "Privacidad" }
+      ]
+    }
+  ];
+
+  var CATEGORIAS = [
+    {
+      titulo: "Redes sociales",
+      clase: "cat-rosa",
+      icono: "📱",
+      desc: "Destaca en tu bio, estados y comentarios.",
+      enlaces: [
+        { ruta: "/instagram.html", etiqueta: "Instagram" },
+        { ruta: "/tiktok.html", etiqueta: "TikTok" },
+        { ruta: "/whatsapp.html", etiqueta: "WhatsApp" },
+        { ruta: "/discord.html", etiqueta: "Discord" },
+        { ruta: "/facebook.html", etiqueta: "Facebook" },
+        { ruta: "/twitter.html", etiqueta: "Twitter (X)" }
+      ]
+    },
+    {
+      titulo: "Juegos y Free Fire",
+      clase: "cat-oro",
+      icono: "🎮",
+      desc: "Nicks con símbolos, clanes y nombres que se recuerdan.",
+      enlaces: [
+        { ruta: "/nombres-para-free-fire.html", etiqueta: "Nombres para Free Fire" },
+        { ruta: "/nombres-chidos-free-fire.html", etiqueta: "Nombres chidos" },
+        { ruta: "/nombres-clanes-free-fire.html", etiqueta: "Clanes" },
+        { ruta: "/nombres-free-fire-miedo.html", etiqueta: "Nombres de miedo" },
+        { ruta: "/juegos.html", etiqueta: "Letras para juegos" },
+        { ruta: "/nombres-verificado-free-fire.html", etiqueta: "Verificados" }
+      ]
+    },
+    {
+      titulo: "Estilos de letras",
+      clase: "cat-lila",
+      icono: "Aa",
+      desc: "Cursiva, gótica, burbuja y mucho más para cada ocasión.",
+      enlaces: [
+        { ruta: "/cursiva.html", etiqueta: "Cursivas" },
+        { ruta: "/goticas.html", etiqueta: "Góticas" },
+        { ruta: "/letras-burbuja.html", etiqueta: "Burbuja" },
+        { ruta: "/decoradas.html", etiqueta: "Decoradas" },
+        { ruta: "/chidas.html", etiqueta: "Chidas" },
+        { ruta: "/pequena.html", etiqueta: "Pequeñas" }
+      ]
+    },
+    {
+      titulo: "Herramientas",
+      clase: "cat-verde",
+      icono: "✎",
+      desc: "Símbolos, emoticonos y conversores listos para usar.",
+      enlaces: [
+        { ruta: "/simbolos-aesthetic.html", etiqueta: "Símbolos aesthetic" },
+        { ruta: "/kaomoji.html", etiqueta: "Kaomoji" },
+        { ruta: "/emoticonos.html", etiqueta: "Emoticonos" },
+        { ruta: "/hiragana.html", etiqueta: "Hiragana" },
+        { ruta: "/numeros-en-letras.html", etiqueta: "Números en letras" },
+        { ruta: "/mayusculas-a-minusculas.html", etiqueta: "Mayúsculas a minúsculas" }
+      ]
+    }
+  ];
+
+  var PASOS = [
+    {
+      numero: "01",
+      titulo: "Escribe tu texto",
+      texto: "Tu nombre, una frase o el nick que quieras transformar. Acentos, eñes y emojis incluidos."
+    },
+    {
+      numero: "02",
+      titulo: "Elige tu estilo",
+      texto: "Verás cientos de versiones al instante. Filtra con el buscador y ajusta el tamaño de letra."
+    },
+    {
+      numero: "03",
+      titulo: "Copia y pega",
+      texto: "Pulsa Copiar en tu favorita y pégala en Instagram, WhatsApp, TikTok o Free Fire."
+    }
+  ];
+
+  /* ---------------------------- utilidades ---------------------------- */
+  function rutaActual() {
+    var ruta = location.pathname.replace(/index\.html$/, "");
+    return ruta === "" ? "/" : ruta;
   }
 
-  function columna(titulo, items) {
-    if (!items || !items.length) return "";
-    return "<div><h4>" + titulo + "</h4>" + lista(items) + "</div>";
+  function esActual(ruta) {
+    var actual = rutaActual();
+    if (ruta === "/") return actual === "/";
+    return actual === ruta;
   }
 
-  /* HTML del panel del menú hamburguesa: enlace a la portada + grupos */
-  function menuHTML() {
-    var html = '<a class="menu-inicio" href="/">Inicio</a><div class="menu-rejilla">';
+  function enlaces(items) {
+    var html = "";
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      var externo = it.externa ? ' target="_blank" rel="noopener"' : "";
+      var actual = !it.externa && esActual(it.ruta) ? ' aria-current="page"' : "";
+      html += '<li><a href="' + it.ruta + '"' + externo + actual + ">" + it.etiqueta + "</a></li>";
+    }
+    return html;
+  }
+
+  /* ------------------------------ menú ------------------------------ */
+  function pintarNavRapida() {
+    var nav = document.querySelector("[data-nav-rapida]");
+    if (!nav) return;
+    var html = "";
+    for (var i = 0; i < RAPIDA.length; i++) {
+      html += '<a href="' + RAPIDA[i].ruta + '"' +
+        (esActual(RAPIDA[i].ruta) ? ' aria-current="page"' : "") + ">" +
+        RAPIDA[i].etiqueta + "</a>";
+    }
+    nav.innerHTML = html;
+  }
+
+  function pintarMenu() {
+    var nav = document.querySelector("[data-nav-principal]");
+    if (!nav) return;
+    var html = '<a class="menu-inicio" href="/"' +
+      (rutaActual() === "/" ? ' aria-current="page"' : "") +
+      ">✦ Inicio</a><div class=\"menu-rejilla\">";
     for (var i = 0; i < MENU.length; i++) {
       html +=
-        '<div class="menu-grupo"><h4>' + MENU[i].titulo + "</h4>" +
-        lista(MENU[i].paginas) + "</div>";
+        '<div class="menu-grupo"><h4>' + MENU[i].titulo + "</h4><ul>" +
+        enlaces(MENU[i].paginas) + "</ul></div>";
     }
-    return html + "</div>";
+    nav.innerHTML = html + "</div>";
+  }
+
+  /* ----------------------------- pie ------------------------------- */
+  function pintarPie() {
+    var pie = document.querySelector("[data-pie]");
+    if (!pie) return;
+
+    var redes = "";
+    for (var i = 0; i < REDES.length; i++) {
+      redes += '<a href="' + REDES[i].ruta + '" target="_blank" rel="noopener">' +
+        REDES[i].etiqueta + " ↗</a>";
+    }
+
+    var columnas = "";
+    for (var j = 0; j < PIE_COLUMNAS.length; j++) {
+      columnas += '<div><h3>' + PIE_COLUMNAS[j].titulo + "</h3><ul>" +
+        enlaces(PIE_COLUMNAS[j].enlaces) + "</ul></div>";
+    }
+
+    pie.innerHTML =
+      '<div class="pie-cabecera">' +
+        '<div class="pie-marca">' +
+          '<a class="logo" href="/">' +
+            '<span class="logo-icono" aria-hidden="true">Aa</span>' +
+            '<span class="logo-texto">Letras <em>Bonitas</em></span>' +
+          "</a>" +
+          "<p>El generador de letras bonitas en español para copiar y pegar. " +
+          "Más de 300 estilos gratis en tu navegador, sin registros y sin límites.</p>" +
+        "</div>" +
+        '<div class="pie-redes">' + redes + "</div>" +
+      "</div>" +
+      '<div class="pie-rejilla">' + columnas + "</div>" +
+      '<p class="pie-legal">© ' + new Date().getFullYear() +
+      " Letras Bonitas · Generador de letras y fuentes bonitas para copiar y pegar en " +
+      "Instagram, TikTok, WhatsApp y redes sociales.</p>";
+  }
+
+  /* --------------------- explorador (banda final) ------------------ */
+  function pintarExplorador() {
+    var caja = document.querySelector("[data-explorador]");
+    if (!caja) return;
+
+    var grupos = "";
+    for (var i = 0; i < MENU.length; i++) {
+      grupos +=
+        '<div class="explorador-grupo"><h3>' + MENU[i].titulo + "</h3><ul>" +
+        enlaces(MENU[i].paginas) + "</ul></div>";
+    }
+
+    caja.innerHTML =
+      '<div class="contenedor">' +
+        '<div class="seccion-cabecera">' +
+          "<div><p class=\"etiqueta\">Sigue explorando</p>" +
+          '<h2 id="explorador-titulo">Todo el catálogo de letras</h2></div>' +
+          '<p>52 páginas de estilos, símbolos y nombres listos para copiar.</p>' +
+        "</div>" +
+        '<div class="explorador-rejilla">' + grupos + "</div>" +
+      "</div>";
+  }
+
+  /* ------------------- categorías y pasos (inicio) ------------------ */
+  function pintarCategorias() {
+    var caja = document.querySelector("[data-categorias]");
+    if (!caja) return;
+
+    var html = "";
+    for (var i = 0; i < CATEGORIAS.length; i++) {
+      var c = CATEGORIAS[i];
+      var links = "";
+      for (var j = 0; j < c.enlaces.length; j++) {
+        links += '<a href="' + c.enlaces[j].ruta + '">' + c.enlaces[j].etiqueta + "</a>";
+      }
+      html +=
+        '<article class="categoria-tarjeta">' +
+          '<span class="categoria-icono ' + c.clase + '" aria-hidden="true">' + c.icono + "</span>" +
+          "<h3>" + c.titulo + "</h3>" +
+          "<p>" + c.desc + "</p>" +
+          '<div class="categoria-enlaces">' + links + "</div>" +
+        "</article>";
+    }
+
+    caja.innerHTML =
+      '<div class="contenedor">' +
+        '<div class="seccion-cabecera">' +
+          "<div><p class=\"etiqueta\">Encuentra lo tuyo</p>" +
+          "<h2>Explora por categoría</h2></div>" +
+          '<p>Elige dónde vas a usar tus letras.</p>' +
+        "</div>" +
+        '<div class="categorias-rejilla">' + html + "</div>" +
+      "</div>";
+  }
+
+  function pintarPasos() {
+    var caja = document.querySelector("[data-pasos]");
+    if (!caja) return;
+    var html = "";
+    for (var i = 0; i < PASOS.length; i++) {
+      html +=
+        '<article class="paso">' +
+          '<span class="paso-numero" aria-hidden="true">' + PASOS[i].numero + "</span>" +
+          "<h3>" + PASOS[i].titulo + "</h3>" +
+          "<p>" + PASOS[i].texto + "</p>" +
+        "</article>";
+    }
+    caja.innerHTML =
+      '<div class="contenedor">' +
+        '<div class="seccion-cabecera">' +
+          "<div><p class=\"etiqueta\">Así de fácil</p>" +
+          "<h2>Cómo funciona</h2></div>" +
+          '<p>Sin instalar nada. En tres pasos.</p>' +
+        "</div>" +
+        '<div class="pasos-rejilla">' + html + "</div>" +
+      "</div>";
+  }
+
+  /* ---------------------------- cookies ---------------------------- */
+  function pintarCookies() {
+    var banner = document.querySelector("[data-banner-cookies]");
+    if (!banner) return;
+    banner.innerHTML =
+      "<p>Usamos cookies propias y de terceros para analizar el uso del sitio. " +
+      'Consulta nuestra <a href="/cookies.html">política de cookies</a>.</p>' +
+      '<button class="boton secundario" type="button" data-cookies-accion="rechazadas">Rechazar</button>' +
+      '<button class="boton" type="button" data-cookies-accion="aceptadas">Aceptar</button>';
   }
 
   function render() {
-    /* 1) Menú principal */
-    var nav = document.querySelector("[data-nav-principal]");
-    if (nav) {
-      nav.innerHTML = menuHTML();
-    }
-
-    /* 2) Pie de página */
-    var pie = document.querySelector("[data-nav-pie]");
-    if (pie) {
-      pie.innerHTML =
-        columna("Redes sociales", REDES) +
-        columna("Estilos", ESTILOS) +
-        columna("Juegos y nombres", JUEGOS) +
-        columna("Información", INFO);
-    }
-
-    /* 3) Aviso de cookies */
-    var banner = document.querySelector("[data-banner-cookies]");
-    if (banner) {
-      var politica =
-        typeof COOKIES_POLITICA !== "undefined"
-          ? ' Consulta nuestra <a href="' + COOKIES_POLITICA + '">política de cookies</a>.'
-          : " Consulta nuestra política de cookies (disponible próximamente).";
-      banner.innerHTML =
-        "<p>Usamos cookies propias y de terceros para analizar el uso del sitio." +
-        politica +
-        "</p>" +
-        '<button class="boton secundario" type="button" data-cookies-accion="rechazadas">Rechazar</button>' +
-        '<button class="boton" type="button" data-cookies-accion="aceptadas">Aceptar</button>';
-    }
+    pintarNavRapida();
+    pintarMenu();
+    pintarPie();
+    pintarExplorador();
+    pintarCategorias();
+    pintarPasos();
+    pintarCookies();
   }
 
-  /* El script se carga al final del <body>, así que los contenedores ya
-     existen. Si por algún motivo no, reintentamos al DOMContentLoaded. */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", render);
   } else {

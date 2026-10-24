@@ -41,14 +41,43 @@
     return mapa;
   }
 
+  function tiene(mapa, clave) {
+    return Object.prototype.hasOwnProperty.call(mapa, clave);
+  }
+
+  /* Convierte un carácter (posiblemente acentuado) con un mapa.
+     Las letras acentuadas no existen en los alfabetos matemáticos: se
+     convierten a letra base + acento combinante para que cursiva, negrita,
+     gótica, etc. también afecten a á é í ó ú ü ñ. */
+  function mapearCaracter(c, mapa) {
+    if (tiene(mapa, c)) return mapa[c];
+    var partes = Array.from(c.normalize("NFD"));
+    if (partes.length < 2) return c;
+    var base = partes[0];
+    var marcas = partes.slice(1).join("");
+    /* Chrome no posiciona bien ciertas marcas sobre algunos alfabetos
+       matemáticos (el acento agudo sale como un cuadro). En ese caso se
+       sustituye solo la letra acentuada por otra variante del mismo estilo
+       que sí admite la marca; el resto de la palabra no cambia. */
+    var rota = false;
+    if (mapa.marcasRotas) {
+      for (var i = 1; i < partes.length; i++) {
+        if (mapa.marcasRotas.indexOf(partes[i]) !== -1) { rota = true; break; }
+      }
+    }
+    if (rota && mapa.respaldo) {
+      var alt = M[mapa.respaldo];
+      if (alt && tiene(alt, base)) return alt[base] + marcas;
+    }
+    if (tiene(mapa, base)) return mapa[base] + marcas;
+    return c;
+  }
+
   function aplicar(mapa) {
     return function (texto) {
       var salida = "";
-      var chars = Array.from(texto);
-      for (var i = 0; i < chars.length; i++) {
-        var c = chars[i];
-        salida += Object.prototype.hasOwnProperty.call(mapa, c) ? mapa[c] : c;
-      }
+      var chars = Array.from(String(texto).normalize("NFC"));
+      for (var i = 0; i < chars.length; i++) salida += mapearCaracter(chars[i], mapa);
       return salida;
     };
   }
@@ -76,6 +105,25 @@
     };
   }
 
+  /* Separa grafemas (no puntos de código) para no romper tildes ni emojis. */
+  function grafemas(texto) {
+    if (typeof Intl !== "undefined" && Intl.Segmenter) {
+      var segmentador = new Intl.Segmenter("es", { granularity: "grapheme" });
+      return Array.from(segmentador.segment(texto), function (s) { return s.segment; });
+    }
+    return Array.from(texto);
+  }
+
+  /* Convierte palabra a palabra y separa sus letras con `sep`; así las
+     burbujas conservan aire sin perder los espacios entre palabras. */
+  function entreLetras(mapa, sep) {
+    return function (texto) {
+      return String(texto).trim().split(/\s+/).map(function (palabra) {
+        return grafemas(aplicar(mapa)(palabra)).join(sep);
+      }).join("   ");
+    };
+  }
+
   /* ----------------- Mapas ----------------- */
   var M = {};
 
@@ -87,11 +135,11 @@
     L: "\u2112", M: "\u2133", R: "\u211b",
     e: "\u212f", g: "\u210a", o: "\u2134"
   });
-  M.caligraficaNegrita = porRango(0x1d4d0, 0x1d4ea);
+  M.caligraficaNegrita = porRango(0x1d4d0, 0x1d4ea, 0x1d7ce);
   M.gotica = porRango(0x1d504, 0x1d51e, null, {
     C: "\u212d", H: "\u210c", I: "\u2111", R: "\u211c", Z: "\u2128"
   });
-  M.goticaNegrita = porRango(0x1d56c, 0x1d586);
+  M.goticaNegrita = porRango(0x1d56c, 0x1d586, 0x1d7ce);
   M.dobleTrazo = porRango(0x1d538, 0x1d552, 0x1d7d8, {
     C: "\u2102", H: "\u210d", N: "\u2115", P: "\u2119", Q: "\u211a",
     R: "\u211d", Z: "\u2124"
@@ -101,8 +149,14 @@
   M.sansCursiva = porRango(0x1d608, 0x1d622, 0x1d7e2);
   M.sansCursivaNegrita = porRango(0x1d63c, 0x1d656, 0x1d7ec);
   M.mono = porRango(0x1d670, 0x1d68a, 0x1d7f6);
-  M.circulo = porRango(0x24b6, 0x24d0, 0x2460, { 0: "\u24ea" });
-  M.circuloNegro = porRango(0x1f150, 0x1f150, null, {});
+  M.circulo = porRango(0x24b6, 0x24d0, null, {
+    "0": "\u24ea", "1": "\u2460", "2": "\u2461", "3": "\u2462", "4": "\u2463",
+    "5": "\u2464", "6": "\u2465", "7": "\u2466", "8": "\u2467", "9": "\u2468"
+  });
+  M.circuloNegro = porRango(0x1f150, 0x1f150, null, {
+    "0": "\u24ff", "1": "\u2776", "2": "\u2777", "3": "\u2778", "4": "\u2779",
+    "5": "\u277a", "6": "\u277b", "7": "\u277c", "8": "\u277d", "9": "\u277e"
+  });
   M.cuadro = porRango(0x1f130, 0x1f130, null, {});
   M.cuadroNegro = porRango(0x1f170, 0x1f170, null, {});
   M.anchoCompleto = porRango(0xff21, 0xff41, 0xff10, { " ": "\u3000" });
@@ -119,8 +173,9 @@
   );
 
   M.versalitas = porCadena(
-    "abcdefghijklmnopqrstuvwxyz",
-    "\u1d00\u0299\u1d04\u1d05\u1d07\ua730\u0262\u029c\u026a\u1d0a\u1d0b\u029f\u1d0d\u0274\u1d0f\u1d18\u01eb\u0280\ua731\u1d1b\u1d1c\u1d20\u1d21\u2093\u028f\u1d22"
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "\u1d00\u0299\u1d04\u1d05\u1d07\ua730\u0262\u029c\u026a\u1d0a\u1d0b\u029f\u1d0d\u0274\u1d0f\u1d18\u01eb\u0280\ua731\u1d1b\u1d1c\u1d20\u1d21x\u028f\u1d22" +
+      "\u1d00\u0299\u1d04\u1d05\u1d07\ua730\u0262\u029c\u026a\u1d0a\u1d0b\u029f\u1d0d\u0274\u1d0f\u1d18\u01eb\u0280\ua731\u1d1b\u1d1c\u1d20\u1d21x\u028f\u1d22"
   );
 
   M.superindice = porCadena(
@@ -201,16 +256,58 @@
   M.neon = porCadena(N52, "ᗩᗷᑕᗪEᖴGᕼIᒍKᒪᗰᑎOᑭᑫᖇᔕTᑌᐯᗯ᙭Yᘔ" + "ᗩᗷᑕᗪEᖴGᕼIᒍKᒪᗰᑎOᑭᑫᖇᔕTᑌᐯᗯ᙭Yᘔ");
   M.codigo = porCadena(N52, "♋♌♍♎♏♐♑♒♓♈♉♊♔♕♖♗♘♙♚♛♜♝♞♟✦✧" + "♋♌♍♎♏♐♑♒♓♈♉♊♔♕♖♗♘♙♚♛♜♝♞♟✦✧");
 
+  /* --- Respaldo de acentos por alfabeto -------------------------------
+     Algunos alfabetos matemáticos no tienen anclajes para ciertas marcas
+     combinantes en Chrome (el acento agudo y el grave salen como cuadros).
+     Para esos alfabetos, la letra acentuada se sustituye por otra variante
+     del mismo estilo que sí admite la marca. El resto de la palabra
+     conserva su alfabeto. */
+  var ACENTOS_ROTOS = {
+    negritaSerif: ["\u0301\u0300", "sansNegrita"],
+    cursivaNegrita: ["\u0301\u0300", "cursiva"],
+    caligrafica: ["\u0301\u0300", "cursiva"],
+    caligraficaNegrita: ["\u0301\u0300", "cursiva"],
+    gotica: ["\u0301\u0300", "sans"],
+    goticaNegrita: ["\u0301\u0300", "sansNegrita"],
+    sansCursiva: ["\u0301\u0300", "cursiva"],
+    sansCursivaNegrita: ["\u0301\u0300", "sansNegrita"],
+    anchoCompleto: ["\u0301\u0300\u0303\u0308", "sans"],
+    circulo: ["\u0303\u0308", "sans"],
+    circuloNegro: ["\u0303\u0308", "sansNegrita"],
+    cuadro: ["\u0303\u0308", "sansNegrita"],
+    cuadroNegro: ["\u0303\u0308", "sansNegrita"],
+    parentesis: ["\u0303\u0308", "sans"],
+    superindice: ["\u0301\u0300\u0303\u0308", "sans"],
+    subindice: ["\u0301\u0300\u0303\u0308", "sans"]
+  };
+  for (var claveAcento in ACENTOS_ROTOS) {
+    if (tiene(ACENTOS_ROTOS, claveAcento)) {
+      M[claveAcento].marcasRotas = ACENTOS_ROTOS[claveAcento][0];
+      M[claveAcento].respaldo = ACENTOS_ROTOS[claveAcento][1];
+    }
+  }
+  M.cajaMayus.marcasRotas = "\u0301\u0300\u0303\u0308";
+  M.cajaMayus.respaldo = "sans";
+  M.cajaNegraMayus.marcasRotas = "\u0301\u0300\u0303\u0308";
+  M.cajaNegraMayus.respaldo = "sansNegrita";
+  ["oriental", "oriental2", "moneda", "armenio", "rizada", "ondulada",
+    "demonio", "thai", "yi", "etiope", "georgiano", "bengali", "hindi",
+    "yi2", "runas", "cingales", "angulares", "neon", "codigo",
+    "squiggle", "squiggle2", "rusa", "griega"].forEach(function (clave) {
+    M[clave].marcasRotas = "\u0301\u0300\u0303\u0308";
+    M[clave].respaldo = "sans";
+  });
+
   /* Mezcla letra a letra: alterna alfabetos distintos dentro de un texto. */
   function mezclarTexto(texto, claves) {
     var salida = "";
-    var chars = Array.from(String(texto).normalize("NFD"));
+    var chars = Array.from(String(texto).normalize("NFC"));
     var i = 0;
     for (var j = 0; j < chars.length; j++) {
       var c = chars[j];
-      if (/\s/.test(c)) { salida += c; i++; continue; }
+      if (/\s/.test(c)) { salida += c; continue; }
       var mapa = M[claves[i % claves.length]];
-      salida += mapa && mapa[c] ? mapa[c] : c;
+      salida += mapa ? mapearCaracter(c, mapa) : c;
       i++;
     }
     return salida;
@@ -309,6 +406,14 @@
     return envolver(par[0] + " ", " " + par[1]);
   }
 
+  /* Aplica un alfabeto y lo enmarca con un adorno: la base de las
+     "fuentes premium" (cursiva romántica, gótica oscura, etc.). */
+  function conAdorno(mapa, izq, der) {
+    return function (texto) {
+      return izq + " " + aplicar(mapa)(texto) + " " + der;
+    };
+  }
+
   /* --- Ayudas para los estilos de carpintero ---
      letro(): convierte a mayúsculas y aplica un alfabeto (aspecto de
      rótulo técnico). grabado(): aplica una marca combinante sobre el
@@ -346,29 +451,49 @@
     { id: "francotirador-gamer", nombre: "Francotirador ▄︻デ══━一", cat: ["freefire", "juegos", "goticas", "chidas", "graffiti", "cholas"], fn: function (t) { return "▄︻デ══━一 " + t; } },
     
     // FUENTES COMUNES Y DE ESTILO
-    { id: "caja-mayus", nombre: "Caja en mayúsculas", cat: ["caja", "comunes", "instagram", "facebook", "juegos", "discord"], fn: aplicar(M.cajaMayus) },
-    { id: "caja-negra-mayus", nombre: "Caja negra mayúsculas", cat: ["caja", "negrita", "comunes", "instagram", "whatsapp", "discord"], fn: aplicar(M.cajaNegraMayus) },
-    { id: "cursiva", nombre: "Cursiva", cat: ["cursiva", "comunes", "instagram", "facebook", "whatsapp", "twitter", "tiktok", "chidas"], fn: aplicar(M.cursiva) },
-    { id: "cursiva-negrita", nombre: "Cursiva negrita", cat: ["cursiva", "negrita", "comunes", "instagram", "whatsapp"], fn: aplicar(M.cursivaNegrita) },
-    { id: "caligrafica", nombre: "Caligráfica", cat: ["cursiva", "decoradas", "bonitas", "instagram", "facebook"], fn: aplicar(M.caligrafica) },
-    { id: "caligrafica-negrita", nombre: "Caligráfica negrita", cat: ["cursiva", "negrita", "decoradas", "bonitas"], fn: aplicar(M.caligraficaNegrita) },
-    { id: "negrita", nombre: "Negrita", cat: ["negrita", "comunes", "instagram", "facebook", "whatsapp", "twitter", "carpintero"], fn: aplicar(M.negritaSerif) },
-    { id: "sans-negrita", nombre: "Negrita sans", cat: ["negrita", "comunes", "twitter", "discord", "carpintero"], fn: aplicar(M.sansNegrita) },
-    { id: "sans", nombre: "Sans", cat: ["comunes", "discord", "twitter", "carpintero"], fn: aplicar(M.sans) },
-    { id: "sans-cursiva", nombre: "Sans cursiva", cat: ["cursiva", "comunes", "discord"], fn: aplicar(M.sansCursiva) },
-    { id: "sans-cursiva-negrita", nombre: "Sans cursiva negrita", cat: ["cursiva", "negrita"], fn: aplicar(M.sansCursivaNegrita) },
-    { id: "gotica", nombre: "Gótica", cat: ["goticas", "graffiti", "cholas", "juegos", "chidas", "instagram"], fn: aplicar(M.gotica) },
-    { id: "gotica-negrita", nombre: "Gótica negrita", cat: ["goticas", "graffiti", "cholas", "juegos"], fn: aplicar(M.goticaNegrita) },
-    { id: "doble-trazo", nombre: "Doble trazo", cat: ["comunes", "raras", "juegos", "discord", "carpintero"], fn: aplicar(M.dobleTrazo) },
-    { id: "mono", nombre: "Monoespaciada", cat: ["comunes", "carpintero", "discord", "raras"], fn: aplicar(M.mono) },
-    { id: "ancho-completo", nombre: "Ancho completo", cat: ["aesthetic", "raras", "juegos", "tiktok"], fn: aplicar(M.anchoCompleto) },
-    { id: "circulo", nombre: "Burbuja", cat: ["burbuja", "bonitas", "instagram", "tiktok"], fn: aplicar(M.circulo) },
-    { id: "circulo-negro", nombre: "Burbuja negra", cat: ["burbuja", "goticas", "juegos"], fn: aplicar(M.circuloNegro) },
-    { id: "cuadro", nombre: "Caja simple", cat: ["caja", "juegos", "raras"], fn: aplicar(M.cuadro) },
-    { id: "cuadro-negro", nombre: "Caja negra simple", cat: ["caja", "juegos", "goticas"], fn: aplicar(M.cuadroNegro) },
-    { id: "versalitas", nombre: "Versalitas (pequeñas)", cat: ["pequena", "comunes", "aesthetic", "instagram", "carpintero"], fn: aplicar(M.versalitas) },
-    { id: "superindice", nombre: "Superíndice (mini)", cat: ["pequena", "raras", "aesthetic", "carpintero"], fn: aplicar(M.superindice) },
-    { id: "subindice", nombre: "Subíndice (mini)", cat: ["pequena", "raras", "carpintero"], fn: aplicar(M.subindice) },
+    { id: "caja-mayus", nombre: "Caja en mayúsculas", cat: ["caja", "comunes", "instagram", "facebook", "juegos", "discord", "chidas", "freefire"], fn: aplicar(M.cajaMayus) },
+    { id: "caja-negra-mayus", nombre: "Caja negra mayúsculas", cat: ["caja", "negrita", "comunes", "instagram", "whatsapp", "discord", "juegos", "chidas", "freefire"], fn: aplicar(M.cajaNegraMayus) },
+    { id: "cursiva", nombre: "Cursiva", cat: ["cursiva", "comunes", "instagram", "facebook", "whatsapp", "twitter", "tiktok", "chidas", "juegos", "freefire"], fn: aplicar(M.cursiva) },
+    { id: "cursiva-negrita", nombre: "Cursiva negrita", cat: ["cursiva", "negrita", "comunes", "instagram", "whatsapp", "chidas", "juegos", "freefire"], fn: aplicar(M.cursivaNegrita) },
+    { id: "caligrafica", nombre: "Caligráfica", cat: ["cursiva", "decoradas", "bonitas", "instagram", "facebook", "chidas", "juegos", "freefire"], fn: aplicar(M.caligrafica) },
+    { id: "caligrafica-negrita", nombre: "Caligráfica negrita", cat: ["cursiva", "negrita", "decoradas", "bonitas", "chidas", "juegos", "freefire"], fn: aplicar(M.caligraficaNegrita) },
+    { id: "negrita", nombre: "Negrita", cat: ["negrita", "comunes", "instagram", "facebook", "whatsapp", "twitter", "carpintero", "chidas", "juegos"], fn: aplicar(M.negritaSerif) },
+    { id: "sans-negrita", nombre: "Negrita sans", cat: ["negrita", "comunes", "twitter", "discord", "carpintero", "juegos", "chidas", "freefire"], fn: aplicar(M.sansNegrita) },
+    { id: "sans", nombre: "Sans", cat: ["comunes", "discord", "twitter", "carpintero", "juegos", "chidas", "freefire"], fn: aplicar(M.sans) },
+    { id: "sans-cursiva", nombre: "Sans cursiva", cat: ["cursiva", "comunes", "discord", "juegos", "chidas", "freefire"], fn: aplicar(M.sansCursiva) },
+    { id: "sans-cursiva-negrita", nombre: "Sans cursiva negrita", cat: ["cursiva", "negrita", "comunes", "instagram", "chidas", "juegos", "freefire"], fn: aplicar(M.sansCursivaNegrita) },
+    { id: "gotica", nombre: "Gótica", cat: ["goticas", "graffiti", "cholas", "juegos", "chidas", "instagram", "freefire"], fn: aplicar(M.gotica) },
+    { id: "gotica-negrita", nombre: "Gótica negrita", cat: ["goticas", "graffiti", "cholas", "juegos", "chidas", "freefire"], fn: aplicar(M.goticaNegrita) },
+    { id: "doble-trazo", nombre: "Doble trazo", cat: ["comunes", "raras", "juegos", "discord", "carpintero", "chidas", "freefire"], fn: aplicar(M.dobleTrazo) },
+    { id: "mono", nombre: "Monoespaciada", cat: ["comunes", "carpintero", "discord", "raras", "juegos", "freefire", "chidas"], fn: aplicar(M.mono) },
+    { id: "ancho-completo", nombre: "Ancho completo", cat: ["aesthetic", "raras", "juegos", "tiktok", "freefire", "chidas"], fn: aplicar(M.anchoCompleto) },
+    { id: "circulo", nombre: "Burbuja", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: aplicar(M.circulo) },
+    { id: "circulo-negro", nombre: "Burbuja negra (mayúsculas)", cat: ["burbuja", "goticas", "juegos", "freefire", "chidas"], fn: aplicar(M.circuloNegro) },
+    { id: "cuadro", nombre: "Caja cuadrada (mayúsculas)", cat: ["caja", "juegos", "raras", "chidas", "freefire"], fn: aplicar(M.cuadro) },
+    { id: "cuadro-negro", nombre: "Caja negra cuadrada (mayúsculas)", cat: ["caja", "juegos", "goticas", "chidas", "freefire"], fn: aplicar(M.cuadroNegro) },
+    { id: "versalitas", nombre: "Versalitas (pequeñas)", cat: ["pequena", "comunes", "aesthetic", "instagram", "carpintero", "juegos", "chidas"], fn: aplicar(M.versalitas) },
+    { id: "superindice", nombre: "Superíndice (mini)", cat: ["pequena", "raras", "aesthetic", "carpintero", "juegos", "chidas"], fn: aplicar(M.superindice) },
+    { id: "subindice", nombre: "Subíndice (mini)", cat: ["pequena", "raras", "carpintero", "juegos", "chidas"], fn: aplicar(M.subindice) },
+    /* --- Fuentes premium: un alfabeto llamativo con un marco fino --- */
+    { id: "parentesis-latinos", nombre: "Letras entre paréntesis ⒜", cat: ["burbuja", "raras", "comunes", "bonitas", "juegos", "discord", "chidas"], fn: aplicar(M.parentesis) },
+    { id: "cursiva-romantica", nombre: "Cursiva romántica ❦", cat: ["cursiva", "bonitas", "decoradas", "aesthetic", "instagram", "tiktok", "chidas"], fn: conAdorno(M.cursiva, "\u2766", "\u2766") },
+    { id: "cursiva-lunar", nombre: "Cursiva lunar ☾", cat: ["cursiva", "aesthetic", "bonitas", "decoradas", "tristes", "instagram", "tiktok", "chidas"], fn: conAdorno(M.cursiva, "\u263e", "\u263d") },
+    { id: "cursiva-brillante", nombre: "Cursiva brillante ✧", cat: ["cursiva", "aesthetic", "bonitas", "decoradas", "instagram", "tiktok", "chidas"], fn: conAdorno(M.cursiva, "\u2727\u00b7\u02da", "\u02da\u00b7\u2727") },
+    { id: "caligrafica-lujo", nombre: "Caligráfica de lujo ❖", cat: ["cursiva", "negrita", "bonitas", "decoradas", "instagram", "facebook", "chidas"], fn: conAdorno(M.caligraficaNegrita, "\u2756", "\u2756") },
+    { id: "gotica-oscura", nombre: "Gótica oscura †", cat: ["goticas", "decoradas", "chidas", "juegos", "freefire", "graffiti", "cholas"], fn: conAdorno(M.goticaNegrita, "\u2020", "\u2020") },
+    { id: "negrita-editorial", nombre: "Negrita editorial ✦", cat: ["negrita", "comunes", "bonitas", "instagram", "facebook", "whatsapp", "twitter", "chidas"], fn: conAdorno(M.negritaSerif, "\u2726", "\u2726") },
+    { id: "sans-futurista", nombre: "Sans futurista ⟪⟫", cat: ["cursiva", "negrita", "juegos", "freefire", "discord", "chidas"], fn: conAdorno(M.sansCursivaNegrita, "\u27ea", "\u27eb") },
+    { id: "burbuja-pastel", nombre: "Burbuja pastel ꒰꒱", cat: ["burbuja", "bonitas", "instagram", "tiktok", "chidas", "juegos"], fn: conAdorno(M.circulo, "\ua4f0", "\ua4f1") },
+    { id: "burbuja-espaciada", nombre: "Burbuja espaciada ⓐ ⓑ", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: entreLetras(M.circulo, " ") },
+    { id: "burbuja-doble", nombre: "Burbuja doble ⓐ🅐", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: function (t) { return mezclarTexto(t.toUpperCase(), ["circulo", "circuloNegro"]); } },
+    { id: "burbuja-graffiti", nombre: "Burbuja graffiti 🄰", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire", "graffiti"], fn: function (t) { return mezclarTexto(t.toUpperCase(), ["cuadro", "circuloNegro", "cuadroNegro", "circulo"]); } },
+    { id: "burbuja-contorno", nombre: "Burbuja contorno 𝕓", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: entreLetras(M.dobleTrazo, " ") },
+    { id: "burbuja-ancha", nombre: "Burbuja ancha Ｂ", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: entreLetras(M.anchoCompleto, " ") },
+    { id: "burbuja-en-caja", nombre: "Burbuja en caja 🄰", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: entreLetras(M.cuadro, " ") },
+    { id: "burbuja-espuma", nombre: "Burbuja espumosa 🫧", cat: ["burbuja", "bonitas", "instagram", "tiktok", "chidas", "juegos"], fn: conAdorno(M.circulo, "\ud83e\udee7", "\ud83e\udee7") },
+    { id: "burbuja-destellos", nombre: "Burbuja destellos ✧", cat: ["burbuja", "bonitas", "instagram", "tiktok", "chidas", "juegos"], fn: conAdorno(M.circulo, "\u2727", "\u2727") },
+    { id: "doble-trazo-retro", nombre: "Doble trazo retro ░▒▓", cat: ["comunes", "raras", "juegos", "discord", "chidas", "goticas"], fn: conAdorno(M.dobleTrazo, "\u2591\u2592\u2593", "\u2593\u2592\u2591") },
+    { id: "versalitas-elegantes", nombre: "Versalitas elegantes ❀", cat: ["pequena", "comunes", "aesthetic", "bonitas", "instagram", "chidas"], fn: conAdorno(M.versalitas, "\u2740", "\u2740") },
     { id: "squiggle", nombre: "Squiggle", cat: ["squiggle", "raras", "chidas", "juegos"], fn: aplicar(M.squiggle) },
     { id: "squiggle-2", nombre: "Squiggle doble", cat: ["squiggle", "raras", "feas"], fn: aplicar(M.squiggle2) },
     { id: "rusa", nombre: "Estilo ruso", cat: ["raras", "feas", "juegos", "graffiti"], fn: aplicar(M.rusa) },
@@ -806,19 +931,59 @@
     { id: "mix-leyenda", nombre: "🎲 Leyenda mixta", fn: function (t) { return "꧁༒☬ " + mezclarTexto(t, ["gotica", "dobleTrazo"]) + " ☬༒꧂"; } }
   ];
 
+  /* --- Portada: orden curado de las fuentes que deben abrir cada página.
+     Antes las páginas generales empezaban con marcos y adornos; ahora las
+     primeras tarjetas son alfabetos de verdad. La página de carpintero
+     conserva su propia curaduría. */
+  var FUENTES_PORTADA = [
+    "cursiva", "cursiva-negrita", "caligrafica", "caligrafica-negrita",
+    "gotica", "gotica-negrita", "negrita", "sans-negrita",
+    "sans-cursiva", "sans-cursiva-negrita", "doble-trazo", "sans", "mono",
+    "circulo", "circulo-negro", "burbuja-pastel",
+    "burbuja-espaciada", "burbuja-doble", "burbuja-graffiti",
+    "burbuja-contorno", "burbuja-ancha", "burbuja-en-caja",
+    "burbuja-espuma", "burbuja-destellos",
+    "cuadro", "cuadro-negro",
+    "ancho-completo", "versalitas", "versalitas-elegantes",
+    "superindice", "subindice", "parentesis-latinos",
+    "cursiva-romantica", "cursiva-lunar", "cursiva-brillante",
+    "caligrafica-lujo", "gotica-oscura", "negrita-editorial",
+    "sans-futurista", "doble-trazo-retro",
+    "squiggle", "squiggle-2", "rusa", "griega", "carpintero",
+    "neon", "codigo-simbolos", "oriental", "oriental-2", "moneda",
+    "armenio", "rizadas", "onduladas", "demonico", "thai", "yi",
+    "etiope", "georgiano", "bengali", "hindi", "yi-2", "runas", "cingales"
+  ];
+
+  function priorizarFuentes(lista) {
+    var orden = {};
+    var i;
+    for (i = 0; i < FUENTES_PORTADA.length; i++) orden[FUENTES_PORTADA[i]] = i;
+    var portada = [];
+    var resto = [];
+    for (i = 0; i < lista.length; i++) {
+      if (Object.prototype.hasOwnProperty.call(orden, lista[i].id)) portada.push(lista[i]);
+      else resto.push(lista[i]);
+    }
+    portada.sort(function (a, b) { return orden[a.id] - orden[b.id]; });
+    return portada.concat(resto);
+  }
+
   var API = {
     estilos: ESTILOS,
     simbolos: SIMBOLOS,
     /* Devuelve los estilos de una categoría (o todos) */
     porCategoria: function (cat) {
-      if (!cat || cat === "todas" || cat === "all") return ESTILOS.slice();
-      var lista = String(cat).split(",").map(function (c) { return c.trim(); });
-      return ESTILOS.filter(function (e) {
+      var todas = !cat || cat === "todas" || cat === "all";
+      var lista = todas ? [] : String(cat).split(",").map(function (c) { return c.trim(); });
+      var resultado = todas ? ESTILOS.slice() : ESTILOS.filter(function (e) {
         for (var i = 0; i < lista.length; i++) {
           if (e.cat.indexOf(lista[i]) !== -1) return true;
         }
         return false;
       });
+      if (lista.indexOf("carpintero") === -1) resultado = priorizarFuentes(resultado);
+      return resultado;
     },
     /* Devuelve los estilos mixtos (opción “🎲 Estilos mixtos”) */
     mixtos: function () { return MIXES.slice(); },
