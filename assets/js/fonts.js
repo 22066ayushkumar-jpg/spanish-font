@@ -773,8 +773,136 @@
     { id: "sueno", nombre: "Gesto de amor ☞", cat: ["emoticonos", "bonitas", "tristes", "aesthetic", "comunes"], fn: bordear(["(☝◞‸◟)☞", "☜(◞‸◟☝)"]) },
 
     /* --- Mezcla caótica letra a letra --- */
-    { id: "mezcla-loca", nombre: "Mezcla loca", cat: ["comunes", "raras", "chidas", "juegos", "freefire", "aesthetic", "tiktok", "goticas"], fn: function (t) { return mezclarTexto(t, ["circulo", "moneda", "goticaNegrita", "oriental", "anchoCompleto", "neon", "armenio", "yi"]); } }
+    { id: "mezcla-loca", nombre: "Mezcla loca", cat: ["comunes", "raras", "chidas", "juegos", "freefire", "aesthetic", "tiktok", "goticas"], fn: function (t) { return mezclarTexto(t, ["circulo", "moneda", "goticaNegrita", "oriental", "anchoCompleto", "neon", "armenio", "yi"]); } },
+
+    /* --- Estilos decorados de la portada (marcos y gamer) --- */
+    { id: "alas-gamer", nombre: "Alas Reales Gamer", cat: ["freefire", "juegos", "goticas", "chidas", "decoradas"], fn: bordear(["\ua9c1\u0f3a", "\u0f3b\ua9c2"]) },
+    { id: "corona-rey-gamer", nombre: "Corona Rey Gamer", cat: ["freefire", "juegos", "negrita", "decoradas", "chidas"], fn: bordear(["\u265b\u4e97", "\u4e97\u265b"]) },
+    { id: "flores-primavera", nombre: "Flores Primavera", cat: ["decoradas", "aesthetic", "bonitas", "instagram"], fn: conAdorno(M.caligrafica, "\u273f", "\u273f") },
+    { id: "corazones-romanticos", nombre: "Corazones Románticos", cat: ["decoradas", "cursiva", "instagram", "whatsapp", "bonitas"], fn: conAdorno(M.caligrafica, "\u2661", "\u2661") }
   ];
+
+  /* --- Nombres descriptivos en español para la interfaz ---
+     El id interno no cambia: solo se mejora la etiqueta visible de las
+     tarjetas, la búsqueda y los datos estructurados. */
+  var NOMBRES_ES = {
+    "cursiva": "Cursiva Itálica Clásica",
+    "cursiva-negrita": "Cursiva Negrita Clásica",
+    "caligrafica": "Cursiva Manuscrita Fina",
+    "caligrafica-negrita": "Cursiva Elegante",
+    "gotica": "Gótica Clásica",
+    "gotica-negrita": "Gótica Negrita Medieval",
+    "negrita": "Negrita Clásica",
+    "sans-negrita": "Negrita Moderna",
+    "sans": "Letras Modernas",
+    "sans-cursiva": "Cursiva Moderna Limpia",
+    "sans-cursiva-negrita": "Negrita Cursiva Moderna",
+    "doble-trazo": "Doble Trazo (Pizarra)",
+    "mono": "Monoespaciada (Máquina de Escribir)",
+    "ancho-completo": "Ancho Completo (Vaporwave)",
+    "circulo": "Letras Burbuja Claras",
+    "circulo-negro": "Letras Burbuja Negras",
+    "cuadro": "Cuadrados Blancos",
+    "cuadro-negro": "Cuadrados Negros Invertidos",
+    "versalitas": "Versalitas (Letras Pequeñas)",
+    "superindice": "Superíndice Diminuto",
+    "subindice": "Subíndice Pequeño",
+    "parentesis-latinos": "Entre Paréntesis",
+    "cursiva-romantica": "Cursiva Romántica",
+    "cursiva-lunar": "Estética Lunar",
+    "cursiva-brillante": "Destellos Estéticos",
+    "caligrafica-lujo": "Caligráfica de Lujo",
+    "gotica-oscura": "Gótica Oscura",
+    "negrita-editorial": "Negrita Editorial",
+    "sans-futurista": "Letras Futuristas",
+    "burbuja-pastel": "Marco Aesthetic Kawaii",
+    "burbuja-espaciada": "Burbuja Espaciada",
+    "burbuja-doble": "Burbuja Doble",
+    "burbuja-graffiti": "Burbuja Graffiti",
+    "burbuja-contorno": "Burbuja Contorno",
+    "burbuja-ancha": "Burbuja Ancha",
+    "burbuja-en-caja": "Burbuja en Caja",
+    "burbuja-espuma": "Burbuja Espumosa",
+    "burbuja-destellos": "Burbuja Destellos",
+    "doble-trazo-retro": "Doble Trazo Retro",
+    "versalitas-elegantes": "Versalitas Elegantes",
+    "squiggle": "Estilo Mágico",
+    "squiggle-2": "Estilo Mágico Doble",
+    "rusa": "Estilo Ruso",
+    "griega": "Letras Griegas Estéticas",
+    "tachado": "Texto Tachado",
+    "subrayado": "Texto Subrayado",
+    "subrayado-doble": "Texto Doble Subrayado",
+    "invertido": "Letras al Revés (Invertidas)",
+    "espejo": "Letras en Espejo",
+    "glitch-suave": "Efecto Zalgo Suave",
+    "glitch": "Efecto Zalgo Medio",
+    "glitch-extremo": "Efecto Zalgo Extremo",
+    "chola-1": "Estilo Cholo Urbano",
+    "chola-2": "Chola con Rosas",
+    "oriental": "Estilo Japonés / Asiático",
+    "oriental-2": "Estilo Asiático 2",
+    "runas": "Runas Nórdicas Antiguas",
+    "moneda": "Letras Chidas Callejeras",
+    "sello-gamer": "Clan Gamer Free Fire",
+    "francotirador-gamer": "Francotirador Pro",
+    "corona-gamer": "Corona Gamer",
+    "espadas-gamer": "Espadas Gamer",
+    "estrellas-dobles": "Estrellas Dobles Gamer",
+    "barrotes-serif": "Clásica con Barrotes",
+    "serif-punteada": "Clásica Punteada",
+    "sello-divino": "Sello Divino Gamer",
+    "barra-poder": "Barra de Poder Gamer",
+    "marco-musical": "Marco Musical",
+    "carpintero": "Carpintero (Mayúsculas Rectas)",
+    "caja-mayus": "Caja en Mayúsculas",
+    "caja-negra-mayus": "Caja Negra en Mayúsculas",
+    "neon": "Estilo Neón",
+    "codigo-simbolos": "Código de Símbolos",
+    "etiope": "Estilo Etíope",
+    "georgiano": "Estilo Georgiano",
+    "bengali": "Estilo Bengalí",
+    "hindi": "Estilo Hindi",
+    "yi": "Estilo Yi",
+    "yi-2": "Estilo Yi 2",
+    "cingales": "Estilo Cingalés",
+    "armenio": "Estilo Armenio",
+    "rizadas": "Letras Rizadas",
+    "onduladas": "Letras Onduladas",
+    "demonico": "Estilo Demoníaco",
+    "thai": "Estilo Tailandés"
+  };
+  for (var n = 0; n < ESTILOS.length; n++) {
+    if (Object.prototype.hasOwnProperty.call(NOMBRES_ES, ESTILOS[n].id)) {
+      ESTILOS[n].nombre = NOMBRES_ES[ESTILOS[n].id];
+    }
+  }
+
+  /* --- Etiquetas de categoría canónicas ---
+     Las páginas usan tanto el singular histórico ("cursiva") como el
+     plural nuevo ("cursivas"). Se añaden ambos para que los filtros,
+     las tarjetas estáticas y los datos estructurados coincidan. */
+  var PARES_CATEGORIA = [
+    ["cursiva", "cursivas"],
+    ["gotica", "goticas"],
+    ["negrita", "negritas"],
+    ["pequena", "pequenas"],
+    ["chola", "cholas"],
+    ["decorada", "decoradas"]
+  ];
+  ESTILOS.forEach(function (estilo) {
+    var extra = [];
+    PARES_CATEGORIA.forEach(function (par) {
+      var tieneUno = estilo.cat.indexOf(par[0]) !== -1;
+      var tieneOtro = estilo.cat.indexOf(par[1]) !== -1;
+      if (tieneUno && !tieneOtro) extra.push(par[1]);
+      if (tieneOtro && !tieneUno) extra.push(par[0]);
+    });
+    if (estilo.cat.indexOf("freefire") !== -1 || estilo.cat.indexOf("juegos") !== -1) {
+      if (estilo.cat.indexOf("gamer") === -1) extra.push("gamer");
+    }
+    if (extra.length) estilo.cat = estilo.cat.concat(extra);
+  });
 
   /* Decoraciones dinámicas: se añaden como estilos extra */
   DECORACIONES.forEach(function (par, i) {
@@ -936,23 +1064,29 @@
      primeras tarjetas son alfabetos de verdad. La página de carpintero
      conserva su propia curaduría. */
   var FUENTES_PORTADA = [
-    "cursiva", "cursiva-negrita", "caligrafica", "caligrafica-negrita",
+    /* Primer bloque: 60 estilos diversos que se pre-renderizan en la
+       portada (cursivas, góticas, negritas, burbujas, decoradas, gamer,
+       aesthetic, pequeñas, símbolos y efectos). */
+    "cursiva", "caligrafica-negrita", "caligrafica", "cursiva-negrita",
     "gotica", "gotica-negrita", "negrita", "sans-negrita",
-    "sans-cursiva", "sans-cursiva-negrita", "doble-trazo", "sans", "mono",
-    "circulo", "circulo-negro", "burbuja-pastel",
-    "burbuja-espaciada", "burbuja-doble", "burbuja-graffiti",
-    "burbuja-contorno", "burbuja-ancha", "burbuja-en-caja",
-    "burbuja-espuma", "burbuja-destellos",
-    "cuadro", "cuadro-negro",
-    "ancho-completo", "versalitas", "versalitas-elegantes",
-    "superindice", "subindice", "parentesis-latinos",
-    "cursiva-romantica", "cursiva-lunar", "cursiva-brillante",
-    "caligrafica-lujo", "gotica-oscura", "negrita-editorial",
-    "sans-futurista", "doble-trazo-retro",
-    "squiggle", "squiggle-2", "rusa", "griega", "carpintero",
-    "neon", "codigo-simbolos", "oriental", "oriental-2", "moneda",
-    "armenio", "rizadas", "onduladas", "demonico", "thai", "yi",
-    "etiope", "georgiano", "bengali", "hindi", "yi-2", "runas", "cingales"
+    "sans-cursiva-negrita", "sans-cursiva", "doble-trazo", "versalitas",
+    "superindice", "subindice", "mono", "ancho-completo",
+    "circulo", "circulo-negro", "cuadro", "cuadro-negro",
+    "burbuja-pastel", "corazones-romanticos", "cursiva-brillante", "cursiva-lunar",
+    "flores-primavera", "sello-gamer", "alas-gamer", "corona-rey-gamer",
+    "francotirador-gamer", "chola-1", "moneda", "oriental",
+    "runas", "squiggle", "griega", "subrayado",
+    "subrayado-doble", "tachado", "invertido", "parentesis-latinos",
+    "glitch-suave", "gotica-oscura", "negrita-editorial", "caligrafica-lujo",
+    "burbuja-espaciada", "burbuja-doble", "burbuja-graffiti", "burbuja-contorno",
+    "burbuja-ancha", "burbuja-en-caja", "burbuja-espuma", "burbuja-destellos",
+    "versalitas-elegantes", "doble-trazo-retro", "rusa", "neon",
+    "codigo-simbolos", "armenio", "etiope", "cingales",
+    /* Resto del catálogo curado. */
+    "sans", "sans-futurista", "squiggle-2", "carpintero",
+    "cursiva-romantica", "oriental-2", "rizadas", "onduladas",
+    "demonico", "thai", "yi", "georgiano",
+    "bengali", "hindi", "yi-2"
   ];
 
   function priorizarFuentes(lista) {

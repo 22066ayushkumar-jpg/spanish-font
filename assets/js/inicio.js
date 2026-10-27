@@ -29,15 +29,15 @@
 
   var CLAVE_FAVS = "lb-favoritos";
   var CLAVE_TAMANO = "lb-tamano";
-  var LIMITE = 30;
+  var LIMITE = 60;
 
   var GRUPOS = {
     todas: "todas",
-    cursivas: "cursiva",
+    cursivas: "cursivas",
     coquette: "aesthetic,decoradas",
     goticas: "goticas",
     freefire: "freefire",
-    pequenas: "pequena"
+    pequenas: "pequenas"
   };
 
   var favoritos = leerFavoritos();
@@ -155,8 +155,12 @@
   /* ------------------------------- tarjetas ------------------------------ */
   function crearTarjeta(estilo, indice, texto) {
     var tarjeta = document.createElement("article");
-    tarjeta.className = "lb-tarjeta";
+    tarjeta.className = "lb-tarjeta style-card";
     tarjeta.setAttribute("data-lb-id", estilo.id);
+    tarjeta.setAttribute("data-style-id", estilo.id);
+    tarjeta.setAttribute("data-style-name", estilo.nombre);
+    tarjeta.setAttribute("data-category", estilo.cat.join(" "));
+    tarjeta.setAttribute("data-default-text", texto);
     tarjeta.title = "Toca para copiar";
     if (esFavorito(estilo.id)) tarjeta.classList.add("is-favorita");
 
@@ -171,13 +175,15 @@
     }
 
     var nombre = document.createElement("span");
-    nombre.className = "lb-tarjeta-nombre";
+    nombre.className = "lb-tarjeta-nombre style-name";
     nombre.textContent = estilo.nombre;
     cabecera.appendChild(nombre);
 
     var salida = document.createElement("p");
-    salida.className = "lb-tarjeta-salida";
+    salida.className = "lb-tarjeta-salida style-preview";
     salida.setAttribute("data-lb-salida", "");
+    salida.setAttribute("data-default", convertir(estilo, texto));
+    salida.setAttribute("data-default-text", convertir(estilo, texto));
     salida.lang = "es";
     salida.textContent = convertir(estilo, texto);
 
@@ -437,8 +443,10 @@
   /* ------------------------------ arranque ------------------------------- */
   pintarFavoritos();
   if (entrada.value.trim()) {
-    actualizarContador(window.LB.porCategoria("todas").length, LIMITE);
-    actualizarBotonMas(window.LB.porCategoria("todas").length, LIMITE);
+    var estaticas = todos(".lb-tarjeta").length;
+    if (estaticas) visibles = estaticas;
+    actualizarContador(window.LB.porCategoria("todas").length, estaticas || LIMITE);
+    actualizarBotonMas(window.LB.porCategoria("todas").length, estaticas || LIMITE);
   } else {
     render();
   }

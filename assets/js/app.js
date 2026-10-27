@@ -202,24 +202,36 @@
     try { localStorage.setItem(CLAVE_FAVS, JSON.stringify(lista)); } catch (e) { /* privado */ }
   }
 
-  function crearBotonCopiar(etiqueta, texto, alCopiar) {
+  function crearBotonCopiar(etiqueta, texto, alCopiar, sinEvento) {
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "copiar";
+    b.className = "copiar copy-btn";
     b.textContent = "Copiar";
     b.setAttribute("aria-label", "Copiar estilo " + etiqueta);
-    b.addEventListener("click", function () {
-      copiar(texto).then(function () {
-        marcarCopiado(b, "Texto copiado al portapapeles");
-        if (alCopiar) alCopiar();
+    if (!sinEvento) {
+      b.addEventListener("click", function () {
+        copiar(texto).then(function () {
+          marcarCopiado(b, "Texto copiado al portapapeles");
+          if (alCopiar) alCopiar();
+        });
       });
-    });
+    }
     return b;
   }
 
-  function crearTarjetaSimple(nombre, valor) {
+  function idDeNombre(nombre) {
+    return nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function crearTarjetaSimple(nombre, valor, prefijo, categoria) {
     var tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta-fuente";
+    tarjeta.className = "tarjeta-fuente style-card";
+    tarjeta.setAttribute("data-style-name", nombre);
+    if (prefijo) {
+      tarjeta.setAttribute("data-style-id", prefijo + "-" + idDeNombre(nombre));
+      tarjeta.setAttribute("data-category", categoria || "");
+    }
 
     var texto = document.createElement("div");
     texto.className = "tarjeta-texto";
@@ -227,12 +239,12 @@
     var cab = document.createElement("div");
     cab.className = "tarjeta-cabecera";
     var nombreEl = document.createElement("span");
-    nombreEl.className = "tarjeta-nombre";
+    nombreEl.className = "tarjeta-nombre style-name";
     nombreEl.textContent = nombre;
     cab.appendChild(nombreEl);
 
     var salida = document.createElement("div");
-    salida.className = "tarjeta-salida";
+    salida.className = "tarjeta-salida style-preview";
     salida.textContent = valor;
 
     texto.appendChild(cab);
@@ -240,11 +252,26 @@
 
     var acciones = document.createElement("div");
     acciones.className = "tarjeta-acciones";
-    acciones.appendChild(crearBotonCopiar(nombre, valor));
+    acciones.appendChild(crearBotonCopiar(nombre, valor, null, true));
 
     tarjeta.appendChild(texto);
     tarjeta.appendChild(acciones);
     return tarjeta;
+  }
+
+  /* Copiar con delegación: sirve tanto para las tarjetas creadas al vuelo
+     como para las que llegan pre-renderizadas en el HTML. */
+  function iniciarCopiaDelegada(salida) {
+    salida.addEventListener("click", function (ev) {
+      var boton = ev.target.closest ? ev.target.closest(".copiar") : null;
+      if (!boton || !salida.contains(boton)) return;
+      var tarjeta = boton.closest(".tarjeta-fuente");
+      var valor = tarjeta ? tarjeta.querySelector(".tarjeta-salida") : null;
+      if (!valor) return;
+      copiar(valor.textContent).then(function () {
+        marcarCopiado(boton, "Texto copiado al portapapeles");
+      });
+    });
   }
 
   function iniciarGenerador() {
@@ -281,7 +308,8 @@
     var categorias = raiz.getAttribute("data-generador") || "todas";
     var baseTodos = window.LB.porCategoria(categorias);
     var mezclasOn = false;
-    var visibles = parseInt(raiz.getAttribute("data-inicial") || "18", 10);
+    var visiblesIniciales = parseInt(raiz.getAttribute("data-inicial") || "18", 10);
+    var visibles = visiblesIniciales;
     var favoritos = leerFavs();
     var modo = "todas";
 
@@ -332,7 +360,7 @@
         '♥ Favoritas <span class="chip-cuenta" data-cuenta-favs>0</span>';
       fav.addEventListener("click", function () {
         modo = modo === "favoritas" ? "todas" : "favoritas";
-        visibles = 18;
+        visibles = visiblesIniciales;
         var activo = modo === "favoritas";
         fav.classList.toggle("activo", activo);
         fav.setAttribute("aria-pressed", activo ? "true" : "false");
@@ -382,7 +410,7 @@
       mezclasOn = false;
       casillaMezclas.addEventListener("change", function () {
         mezclasOn = this.checked;
-        visibles = 18;
+        visibles = visiblesIniciales;
         pintar();
       });
     }
@@ -465,8 +493,12 @@
         try { resultado = estilo.fn(texto); } catch (e) { resultado = texto; }
 
         var tarjeta = document.createElement("article");
-        tarjeta.className = "tarjeta-fuente";
+        tarjeta.className = "tarjeta-fuente style-card";
         tarjeta.setAttribute("data-id", estilo.id);
+        tarjeta.setAttribute("data-style-id", estilo.id);
+        tarjeta.setAttribute("data-style-name", estilo.nombre);
+        tarjeta.setAttribute("data-category", estilo.cat.join(" "));
+        tarjeta.setAttribute("data-default-text", texto);
         if (esFavorito(estilo.id)) tarjeta.classList.add("es-favorita");
 
         var cont = document.createElement("div");
@@ -483,12 +515,13 @@
         }
 
         var nombre = document.createElement("span");
-        nombre.className = "tarjeta-nombre";
+        nombre.className = "tarjeta-nombre style-name";
         nombre.textContent = estilo.nombre;
         cab.appendChild(nombre);
 
         var valor = document.createElement("div");
-        valor.className = "tarjeta-salida";
+        valor.className = "tarjeta-salida style-preview";
+        valor.setAttribute("data-default-text", resultado);
         valor.textContent = resultado;
 
         cont.appendChild(cab);
@@ -506,10 +539,9 @@
         favoritoBtn.title = "Favorita";
         favoritoBtn.textContent = esFavorito(estilo.id) ? "♥" : "♡";
         if (esFavorito(estilo.id)) favoritoBtn.classList.add("activo");
-        favoritoBtn.addEventListener("click", function () { toggleFavorito(estilo.id); });
 
         acciones.appendChild(favoritoBtn);
-        acciones.appendChild(crearBotonCopiar(estilo.nombre, resultado));
+        acciones.appendChild(crearBotonCopiar(estilo.nombre, resultado, null, true));
         tarjeta.appendChild(cont);
         tarjeta.appendChild(acciones);
         fragmento.appendChild(tarjeta);
@@ -547,6 +579,68 @@
       }
     }
 
+    /* ---------- hidratación de las tarjetas pre-renderizadas ----------
+       El HTML estático ya trae las tarjetas convertidas. En lugar de
+       vaciar el contenedor al cargar, se conserva y solo se conectan los
+       botones mediante delegación de eventos. Al escribir, pintar() vuelve
+       a generar las tarjetas con el texto del usuario. */
+    salida.addEventListener("click", function (ev) {
+      var objetivo = ev.target;
+      if (!objetivo || !objetivo.closest) return;
+
+      var favorito = objetivo.closest(".favorito");
+      if (favorito && salida.contains(favorito)) {
+        ev.preventDefault();
+        toggleFavorito(favorito.getAttribute("data-id"));
+        return;
+      }
+
+      var boton = objetivo.closest(".copiar");
+      if (!boton || !salida.contains(boton)) return;
+      var tarjeta = boton.closest(".tarjeta-fuente");
+      var valor = tarjeta ? tarjeta.querySelector(".tarjeta-salida") : null;
+      if (!valor) return;
+      copiar(valor.textContent).then(function () {
+        marcarCopiado(boton, "Texto copiado al portapapeles");
+      });
+    });
+
+    function hidratarEstaticas() {
+      $$(".tarjeta-fuente", salida).forEach(function (tarjeta) {
+        var id = tarjeta.getAttribute("data-id") || tarjeta.getAttribute("data-style-id");
+        if (id) {
+          tarjeta.setAttribute("data-id", id);
+          tarjeta.setAttribute("data-style-id", id);
+        }
+        var nombre = tarjeta.querySelector(".tarjeta-nombre");
+        if (nombre) nombre.classList.add("style-name");
+        var valor = tarjeta.querySelector(".tarjeta-salida");
+        if (valor) valor.classList.add("style-preview");
+      });
+    }
+
+    function actualizarContadorEstatico() {
+      var total = listaTodos().length;
+      var mostrados = $$(".tarjeta-fuente", salida).length;
+      var nCaracteres = Array.from(entrada.value).length;
+      if (contador) {
+        marcarContador(
+          nCaracteres + " caracteres · " + mostrados + " de " + total + " estilos",
+          nCaracteres + "/" + total
+        );
+      }
+      if (botonMas) {
+        var restantes = total - mostrados;
+        if (restantes <= 0) {
+          botonMas.style.display = "none";
+        } else {
+          botonMas.style.display = "inline-flex";
+          botonMas.textContent = "Ver " + Math.min(18, restantes) + " estilos más";
+          botonMas.classList.add("boton-mas");
+        }
+      }
+    }
+
     var pendiente = null;
     function programarPintar() {
       if (pendiente) cancelAnimationFrame(pendiente);
@@ -559,7 +653,7 @@
     entrada.addEventListener("input", programarPintar);
     if (buscador) {
       buscador.addEventListener("input", function () {
-        visibles = 18;
+        visibles = visiblesIniciales;
         programarPintar();
       });
     }
@@ -574,7 +668,7 @@
     if (limpiar) {
       limpiar.addEventListener("click", function () {
         entrada.value = "";
-        visibles = parseInt(raiz.getAttribute("data-inicial") || "18", 10);
+        visibles = visiblesIniciales;
         entrada.focus();
         pintar();
       });
@@ -627,7 +721,12 @@
       }
     }
 
-    pintar();
+    if ($$(".tarjeta-fuente", salida).length) {
+      hidratarEstaticas();
+      actualizarContadorEstatico();
+    } else {
+      pintar();
+    }
     actualizarFavsUI();
     hacerPegajoso();
   }
@@ -732,14 +831,15 @@
       var texto = entrada.value.trim() ? entrada.value : "Escribe tu texto aquí";
       var fragmento = document.createDocumentFragment();
       modos.forEach(function (m) {
-        fragmento.appendChild(crearTarjetaSimple(m.nombre, m.fn(texto)));
+        fragmento.appendChild(crearTarjetaSimple(m.nombre, m.fn(texto), "caja", "herramientas caja mayusculas"));
       });
       salida.innerHTML = "";
       salida.appendChild(fragmento);
     }
 
     entrada.addEventListener("input", pintar);
-    pintar();
+    iniciarCopiaDelegada(salida);
+    if (!salida.querySelector(".tarjeta-fuente")) pintar();
   }
 
   /* -------------------------- números a letras ----------------------- */
@@ -830,13 +930,14 @@
       ];
       var fragmento = document.createDocumentFragment();
       resultados.forEach(function (r) {
-        fragmento.appendChild(crearTarjetaSimple(r.nombre, r.valor));
+        fragmento.appendChild(crearTarjetaSimple(r.nombre, r.valor, "numero", "herramientas numeros letras"));
       });
       salida.appendChild(fragmento);
     }
 
     entrada.addEventListener("input", pintar);
-    pintar();
+    iniciarCopiaDelegada(salida);
+    if (!salida.querySelector(".tarjeta-fuente")) pintar();
   }
 
   /* --------------------- japonés (hiragana/katakana) ------------------ */
@@ -915,14 +1016,15 @@
 
       var fragmento = document.createDocumentFragment();
       filas.forEach(function (r) {
-        fragmento.appendChild(crearTarjetaSimple(r.nombre, r.valor));
+        fragmento.appendChild(crearTarjetaSimple(r.nombre, r.valor, "japones", "herramientas japones"));
       });
       salida.innerHTML = "";
       salida.appendChild(fragmento);
     }
 
     entrada.addEventListener("input", pintar);
-    pintar();
+    iniciarCopiaDelegada(salida);
+    if (!salida.querySelector(".tarjeta-fuente")) pintar();
   }
 
   /* ----------------------------- cookies ----------------------------- */
