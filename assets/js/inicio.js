@@ -440,6 +440,48 @@
     });
   });
 
+  /* ------------------ guía semántica (muestras copiables) ---------------- */
+  var muestrasGuia = Array.prototype.slice.call(
+    document.querySelectorAll(".semantic-seo-guide .copy-inline")
+  );
+  muestrasGuia.forEach(function (muestra) {
+    muestra.setAttribute("role", "button");
+    muestra.setAttribute("tabindex", "0");
+    muestra.setAttribute("aria-label", "Copiar: " + muestra.textContent.trim());
+  });
+
+  function copiarMuestra(muestra) {
+    if (muestra._copiando) return;
+    var texto = muestra._textoOriginal || muestra.textContent.trim();
+    muestra._textoOriginal = texto;
+    copiar(texto).then(function () {
+      muestra._copiando = true;
+      muestra.classList.add("is-copiado");
+      muestra.textContent = "¡Copiado! ✓";
+      avisar("Copiado");
+      clearTimeout(muestra._t);
+      muestra._t = setTimeout(function () {
+        muestra.textContent = texto;
+        muestra.classList.remove("is-copiado");
+        muestra._copiando = false;
+      }, 1200);
+    });
+  }
+
+  document.addEventListener("click", function (ev) {
+    var muestra = ev.target.closest ? ev.target.closest(".semantic-seo-guide .copy-inline") : null;
+    if (!muestra) return;
+    copiarMuestra(muestra);
+  });
+
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    var muestra = ev.target.closest ? ev.target.closest(".semantic-seo-guide .copy-inline") : null;
+    if (!muestra) return;
+    ev.preventDefault();
+    copiarMuestra(muestra);
+  });
+
   /* ------------------------------ arranque ------------------------------- */
   pintarFavoritos();
   if (entrada.value.trim()) {
