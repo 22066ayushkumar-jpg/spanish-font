@@ -34,7 +34,7 @@
         { ruta: "/graffiti.html", etiqueta: "Letras graffiti" },
         { ruta: "/squiggle.html", etiqueta: "Letras squiggle" },
         { ruta: "/tristes.html", etiqueta: "Letras tristes" },
-        { ruta: "/caja.html", etiqueta: "Letras en caja" },
+        { ruta: "/letras-en-caja.html", etiqueta: "Letras en caja" },
         { ruta: "/carpintero.html", etiqueta: "Letras de carpintero" },
         { ruta: "/invisible.html", etiqueta: "Texto invisible" }
       ]

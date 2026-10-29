@@ -16,6 +16,13 @@ export default {
         return Response.redirect(destino.toString(), 301);
       }
 
+      // Old box page renamed: permanent redirect keeps backlinks and rankings
+      if (url.pathname === "/caja.html") {
+        const destino = new URL("/letras-en-caja.html", url);
+        destino.search = url.search;
+        return Response.redirect(destino.toString(), 301);
+      }
+
       // All subpages (/juegos.html, CSS, JS, images) served directly with extensions intact
       return await env.ASSETS.fetch(request);
     } catch (err) {

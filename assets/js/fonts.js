@@ -469,8 +469,20 @@
     { id: "ancho-completo", nombre: "Ancho completo", cat: ["aesthetic", "raras", "juegos", "tiktok", "freefire", "chidas"], fn: aplicar(M.anchoCompleto) },
     { id: "circulo", nombre: "Burbuja", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: aplicar(M.circulo) },
     { id: "circulo-negro", nombre: "Burbuja negra (mayúsculas)", cat: ["burbuja", "goticas", "juegos", "freefire", "chidas"], fn: aplicar(M.circuloNegro) },
-    { id: "cuadro", nombre: "Caja cuadrada (mayúsculas)", cat: ["caja", "juegos", "raras", "chidas", "freefire"], fn: aplicar(M.cuadro) },
-    { id: "cuadro-negro", nombre: "Caja negra cuadrada (mayúsculas)", cat: ["caja", "juegos", "goticas", "chidas", "freefire"], fn: aplicar(M.cuadroNegro) },
+    { id: "cuadro", nombre: "Caja cuadrada (mayúsculas)", cat: ["juegos", "raras", "chidas", "freefire"], fn: aplicar(M.cuadro) },
+    { id: "cuadro-negro", nombre: "Caja negra cuadrada (mayúsculas)", cat: ["juegos", "goticas", "chidas", "freefire"], fn: aplicar(M.cuadroNegro) },
+    /* --- Diseños de caja: marcos, separadores y mezclas --- */
+    { id: "caja-espaciada", nombre: "Caja espaciada 🄰 🄱", cat: ["caja", "bonitas", "instagram", "tiktok", "juegos", "chidas"], fn: entreLetras(M.cajaMayus, " ") },
+    { id: "caja-negra-marco", nombre: "Caja negra con marco 【】", cat: ["caja", "negrita", "bonitas", "instagram", "tiktok", "chidas"], fn: conAdorno(M.cajaNegraMayus, "\u3010", "\u3011") },
+    { id: "caja-corchetes", nombre: "Caja entre corchetes 〚〛", cat: ["caja", "comunes", "bonitas", "instagram", "chidas"], fn: conAdorno(M.cajaMayus, "\u301a", "\u301b") },
+    { id: "caja-tabla", nombre: "Caja tipo tabla ┃", cat: ["caja", "raras", "juegos", "discord", "chidas"], fn: function (t) { return "\u2503 " + String(t).trim().split(/\s+/).map(function (p) { return grafemas(aplicar(M.cajaMayus)(p)).join("\u2503"); }).join(" \u2503 ") + " \u2503"; } },
+    { id: "caja-bloques", nombre: "Caja de bloques ░▒▓", cat: ["caja", "raras", "goticas", "juegos", "chidas"], fn: conAdorno(M.cajaMayus, "\u2591\u2592\u2593", "\u2593\u2592\u2591") },
+    { id: "caja-doble", nombre: "Caja doble 🄰🅰", cat: ["caja", "raras", "instagram", "juegos", "chidas"], fn: function (t) { return mezclarTexto(String(t).toUpperCase(), ["cajaMayus", "cajaNegraMayus"]); } },
+    { id: "caja-rombos", nombre: "Caja con rombos ◇", cat: ["caja", "decoradas", "bonitas", "juegos", "chidas"], fn: function (t) { return "\u25c7 " + String(t).trim().split(/\s+/).map(function (p) { return grafemas(aplicar(M.cajaMayus)(p)).join("\u25c6"); }).join(" ") + " \u25c7"; } },
+    { id: "caja-sello", nombre: "Caja sello ✦", cat: ["caja", "decoradas", "bonitas", "instagram", "tiktok", "chidas"], fn: conAdorno(M.cajaNegraMayus, "\u2726", "\u2726") },
+    { id: "caja-negra-espaciada", nombre: "Caja negra espaciada 🅰 🅱", cat: ["caja", "negrita", "raras", "juegos", "chidas"], fn: entreLetras(M.cajaNegraMayus, " ") },
+    { id: "caja-inicial", nombre: "Caja con inicial negra", cat: ["caja", "comunes", "bonitas", "instagram", "chidas", "juegos"], fn: function (t) { return String(t).trim().split(/\s+/).map(function (p) { var gs = grafemas(p), salida = ""; for (var i = 0; i < gs.length; i++) { var mapa = i === 0 ? M.cajaNegraMayus : M.cajaMayus; salida += mapearCaracter(gs[i], mapa); } return salida; }).join(" "); } },
+    { id: "caja-elegante", nombre: "Caja elegante 「」", cat: ["caja", "bonitas", "comunes", "instagram", "chidas"], fn: conAdorno(M.cajaMayus, "\u300c", "\u300d") },
     { id: "versalitas", nombre: "Versalitas (pequeñas)", cat: ["pequena", "comunes", "aesthetic", "instagram", "carpintero", "juegos", "chidas"], fn: aplicar(M.versalitas) },
     { id: "superindice", nombre: "Superíndice (mini)", cat: ["pequena", "raras", "aesthetic", "carpintero", "juegos", "chidas"], fn: aplicar(M.superindice) },
     { id: "subindice", nombre: "Subíndice (mini)", cat: ["pequena", "raras", "carpintero", "juegos", "chidas"], fn: aplicar(M.subindice) },
@@ -492,6 +504,13 @@
     { id: "burbuja-en-caja", nombre: "Burbuja en caja 🄰", cat: ["burbuja", "bonitas", "instagram", "tiktok", "juegos", "chidas", "freefire"], fn: entreLetras(M.cuadro, " ") },
     { id: "burbuja-espuma", nombre: "Burbuja espumosa 🫧", cat: ["burbuja", "bonitas", "instagram", "tiktok", "chidas", "juegos"], fn: conAdorno(M.circulo, "\ud83e\udee7", "\ud83e\udee7") },
     { id: "burbuja-destellos", nombre: "Burbuja destellos ✧", cat: ["burbuja", "bonitas", "instagram", "tiktok", "chidas", "juegos"], fn: conAdorno(M.circulo, "\u2727", "\u2727") },
+    /* --- Burbuja cursiva: letras manuscritas dentro de pompas --- */
+    { id: "burbuja-cursiva", nombre: "Burbuja cursiva 🫧", cat: ["burbuja", "cursiva", "bonitas", "instagram", "tiktok", "chidas"], fn: conAdorno(M.caligraficaNegrita, "\ud83e\udee7", "\ud83e\udee7") },
+    { id: "burbuja-cursiva-espaciada", nombre: "Burbuja cursiva espaciada", cat: ["burbuja", "cursiva", "bonitas", "instagram", "tiktok", "chidas"], fn: function (t) { return "꒰ " + entreLetras(M.caligraficaNegrita, " ")(t) + " ꒱"; } },
+    /* --- Burbuja diseñada: pompas con marcos y destellos --- */
+    { id: "burbuja-diseno", nombre: "Burbuja diseño ✦", cat: ["burbuja", "decoradas", "bonitas", "instagram", "tiktok", "chidas"], fn: function (t) { return "\u2726 " + String(t).trim().split(/\s+/).map(function (p) { return grafemas(aplicar(M.circulo)(p)).join("\u2727"); }).join(" ") + " \u2726"; } },
+    { id: "burbuja-floral", nombre: "Burbuja floral ❀", cat: ["burbuja", "decoradas", "bonitas", "instagram", "tiktok", "chidas"], fn: conAdorno(M.circulo, "\u2740", "\u2740") },
+    { id: "burbuja-reina", nombre: "Burbuja reina ♛", cat: ["burbuja", "decoradas", "bonitas", "juegos", "chidas"], fn: conAdorno(M.circuloNegro, "\u265b", "\u265b") },
     { id: "doble-trazo-retro", nombre: "Doble trazo retro ░▒▓", cat: ["comunes", "raras", "juegos", "discord", "chidas", "goticas"], fn: conAdorno(M.dobleTrazo, "\u2591\u2592\u2593", "\u2593\u2592\u2591") },
     { id: "versalitas-elegantes", nombre: "Versalitas elegantes ❀", cat: ["pequena", "comunes", "aesthetic", "bonitas", "instagram", "chidas"], fn: conAdorno(M.versalitas, "\u2740", "\u2740") },
     { id: "squiggle", nombre: "Squiggle", cat: ["squiggle", "raras", "chidas", "juegos"], fn: aplicar(M.squiggle) },
@@ -782,6 +801,49 @@
     { id: "corazones-romanticos", nombre: "Corazones Románticos", cat: ["decoradas", "cursiva", "instagram", "whatsapp", "bonitas"], fn: conAdorno(M.caligrafica, "\u2661", "\u2661") }
   ];
 
+  /* --- Letras enmarcadas: 8 marcos × 8 alfabetos = 64 combinaciones ---
+     Cada letra va dentro de su propio marco, palabra por palabra. */
+  var MARCOS_CAJA = [
+    { id: "corchetes", nombre: "Corchetes", izq: "[", der: "]" },
+    { id: "corchetes-angulares", nombre: "Corchetes angulares", izq: "\u27e6", der: "\u27e7" },
+    { id: "corchetes-curvos", nombre: "Corchetes curvos", izq: "\u29fc", der: "\u29fd" },
+    { id: "corchetes-altos", nombre: "Corchetes altos", izq: "\ua70d", der: "\ua709" },
+    { id: "corchetes-dobles", nombre: "Corchetes dobles", izq: "\u298f", der: "\u298e" },
+    { id: "corchetes-cruzados", nombre: "Corchetes cruzados", izq: "\u2991", der: "\u2992" },
+    { id: "cuadros", nombre: "Cuadros", izq: "\u3010", der: "\u3011" },
+    { id: "cuadros-dobles", nombre: "Cuadros dobles", izq: "\u300e", der: "\u300f" }
+  ];
+  var ALFABETOS_CAJA = [
+    { id: "normal", nombre: "Normal", mapa: null },
+    { id: "fraktur", nombre: "Fraktur", mapa: M.gotica },
+    { id: "cursiva-negrita", nombre: "Cursiva Negrita", mapa: M.caligraficaNegrita },
+    { id: "doble-trazo", nombre: "Doble Trazo", mapa: M.dobleTrazo },
+    { id: "sans-negrita", nombre: "Sans Negrita", mapa: M.sansNegrita },
+    { id: "serif-negrita", nombre: "Serif Negrita", mapa: M.negritaSerif },
+    { id: "monoespaciada", nombre: "Monoespaciada", mapa: M.mono },
+    { id: "versalitas", nombre: "Versalitas", mapa: M.versalitas }
+  ];
+  function enmarcarLetras(izq, der, mapa) {
+    var convertir = mapa ? aplicar(mapa) : function (t) { return t; };
+    return function (texto) {
+      return String(texto).trim().split(/\s+/).map(function (palabra) {
+        return grafemas(convertir(palabra)).map(function (letra) {
+          return izq + letra + der;
+        }).join("");
+      }).join(" ");
+    };
+  }
+  MARCOS_CAJA.forEach(function (marco) {
+    ALFABETOS_CAJA.forEach(function (alfabeto) {
+      ESTILOS.push({
+        id: "marco-" + marco.id + "-" + alfabeto.id,
+        nombre: marco.nombre + " " + alfabeto.nombre,
+        cat: ["caja", "decoradas", "raras", "bonitas", "chidas"],
+        fn: enmarcarLetras(marco.izq, marco.der, alfabeto.mapa)
+      });
+    });
+  });
+
   /* --- Nombres descriptivos en español para la interfaz ---
      El id interno no cambia: solo se mejora la etiqueta visible de las
      tarjetas, la búsqueda y los datos estructurados. */
@@ -824,6 +886,11 @@
     "burbuja-en-caja": "Burbuja en Caja",
     "burbuja-espuma": "Burbuja Espumosa",
     "burbuja-destellos": "Burbuja Destellos",
+    "burbuja-cursiva": "Burbuja Cursiva Elegante",
+    "burbuja-cursiva-espaciada": "Burbuja Cursiva Espaciada",
+    "burbuja-diseno": "Burbuja Diseño con Destellos",
+    "burbuja-floral": "Burbuja Floral",
+    "burbuja-reina": "Burbuja Reina",
     "doble-trazo-retro": "Doble Trazo Retro",
     "versalitas-elegantes": "Versalitas Elegantes",
     "squiggle": "Estilo Mágico",
@@ -857,6 +924,20 @@
     "carpintero": "Carpintero (Mayúsculas Rectas)",
     "caja-mayus": "Caja en Mayúsculas",
     "caja-negra-mayus": "Caja Negra en Mayúsculas",
+    "cuadro": "Caja Cuadrada",
+    "cuadro-negro": "Caja Cuadrada Negra",
+    "caja-espaciada": "Caja Espaciada",
+    "caja-negra-marco": "Caja Negra con Marco",
+    "caja-corchetes": "Caja entre Corchetes",
+    "caja-tabla": "Caja Tipo Tabla",
+    "caja-bloques": "Caja de Bloques",
+    "caja-doble": "Caja Doble",
+    "caja-rombos": "Caja con Rombos",
+    "caja-sello": "Caja Sello",
+    "caja-negra-espaciada": "Caja Negra Espaciada",
+    "caja-inicial": "Caja con Inicial Negra",
+    "caja-elegante": "Caja Elegante",
+    "caja-por-letra": "Caja Letra a Letra",
     "neon": "Estilo Neón",
     "codigo-simbolos": "Código de Símbolos",
     "etiope": "Estilo Etíope",
@@ -1073,7 +1154,8 @@
     "superindice", "subindice", "mono", "ancho-completo",
     "circulo", "circulo-negro", "cuadro", "cuadro-negro",
     "burbuja-pastel", "corazones-romanticos", "cursiva-brillante", "cursiva-lunar",
-    "flores-primavera", "sello-gamer", "alas-gamer", "corona-rey-gamer",
+    "burbuja-cursiva", "burbuja-cursiva-espaciada", "burbuja-diseno",
+    "burbuja-floral", "burbuja-reina", "flores-primavera", "sello-gamer", "alas-gamer", "corona-rey-gamer",
     "francotirador-gamer", "chola-1", "moneda", "oriental",
     "runas", "squiggle", "griega", "subrayado",
     "subrayado-doble", "tachado", "invertido", "parentesis-latinos",

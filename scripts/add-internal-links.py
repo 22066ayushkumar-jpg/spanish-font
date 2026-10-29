@@ -54,7 +54,7 @@ PAGINAS = [
     ("/graffiti.html", "Letras graffiti"),
     ("/squiggle.html", "Letras squiggle"),
     ("/tristes.html", "Letras tristes"),
-    ("/caja.html", "Letras en caja"),
+    ("/letras-en-caja.html", "Letras en caja"),
     ("/carpintero.html", "Letras de carpintero"),
     ("/invisible.html", "Texto invisible"),
     ("/simbolos-aesthetic.html", "Símbolos aesthetic"),
